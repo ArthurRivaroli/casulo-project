@@ -49,13 +49,22 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 ### Logo
 - Criado em [src/components/Logo.tsx](src/components/Logo.tsx): SVG do casulo pendurado numa folha com "linhas de seda", ao lado do wordmark "casulo" em fonte Baloo 2 (rounded/bold)
 - Estilo branco com contorno preto (`paint-order: stroke fill`), pensado para funcionar sobre fundos escuros/coloridos
-- Em uso na página de login
+- Em uso na página de login e na página de registro
+
+### Fluxo de registro
+- API em [src/app/api/register/route.ts](src/app/api/register/route.ts): valida campos, faz hash da senha com bcrypt e cria `Household` + `User` (primeiro usuário da casa) numa única escrita aninhada do Prisma
+- Página em [src/app/register/page.tsx](src/app/register/page.tsx), no mesmo estilo visual do login, pedindo nome, nome da casa, email e senha
+- Após cadastro, faz login automático (`signIn`) e redireciona para `/`
+- Testado manualmente: cadastro com sucesso, login automático, e erro tratado para email duplicado ("Já existe uma conta com esse email.")
+- **Desabilitado em seguida**: o Casulo é de uso restrito (só Arthur e Ketlyn), então o cadastro público foi desligado via flag `REGISTRATION_ENABLED = false` em [src/app/api/register/route.ts](src/app/api/register/route.ts) e [src/app/register/page.tsx](src/app/register/page.tsx) (a página mostra uma mensagem "cadastro desabilitado" em vez do formulário; a API retorna 403). O link "Criar conta" foi removido do login. Reativar quando as rotas tiverem proteção/convite.
+- As duas contas reais foram criadas direto no banco (mesma `Household` "Casa Rivaroli"): Arthur Rivaroli e Ketlyn Rivaroli, ambas testadas com login funcionando
+- Ainda não commitado — feito depois do primeiro commit (`e7c6c5d`)
 
 ## Próximos passos
 
 ### Autenticação / onboarding
 - [x] Criar página `/login` (formulário de email + senha)
-- [ ] Criar fluxo de registro (criar `User` + `Household` na primeira conta, já que hoje não existe rota/API para isso, nem a página `/register` que o login já linka)
+- [x] Criar fluxo de registro (cria `User` + `Household` na primeira conta)
 - [ ] Proteger rotas autenticadas (middleware ou checagem de sessão nas páginas)
 
 ### Funcionalidades principais (CRUD)
