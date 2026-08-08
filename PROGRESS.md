@@ -33,7 +33,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
   - Sessão via JWT, com `householdId` propagado para o token/sessão
   - Rota de API em [src/app/api/auth/[...nextauth]/route.ts](src/app/api/auth/[...nextauth]/route.ts)
   - Tipos estendidos do NextAuth em [src/types/next-auth.d.ts](src/types/next-auth.d.ts)
-  - Aponta `pages.signIn` para `/login` (página ainda não existe — ver próximos passos)
+  - Aponta `pages.signIn` para `/login`
 
 ### Infraestrutura de desenvolvimento
 - Corrigido `.npmrc` que tinha `omit=optional` — isso bloqueava a instalação do binário nativo do `lightningcss` (Windows x64), quebrando o Tailwind v4 no `next dev`
@@ -58,14 +58,19 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Testado manualmente: cadastro com sucesso, login automático, e erro tratado para email duplicado ("Já existe uma conta com esse email.")
 - **Desabilitado em seguida**: o Casulo é de uso restrito (só Arthur e Ketlyn), então o cadastro público foi desligado via flag `REGISTRATION_ENABLED = false` em [src/app/api/register/route.ts](src/app/api/register/route.ts) e [src/app/register/page.tsx](src/app/register/page.tsx) (a página mostra uma mensagem "cadastro desabilitado" em vez do formulário; a API retorna 403). O link "Criar conta" foi removido do login. Reativar quando as rotas tiverem proteção/convite.
 - As duas contas reais foram criadas direto no banco (mesma `Household` "Casa Rivaroli"): Arthur Rivaroli e Ketlyn Rivaroli, ambas testadas com login funcionando
-- Ainda não commitado — feito depois do primeiro commit (`e7c6c5d`)
+- Commitado em `a333aa0`
+
+### Proteção de rotas
+- Criado [src/proxy.ts](src/proxy.ts) usando `next-auth/middleware` para exigir sessão em todas as rotas, exceto `/login`, `/register`, `/api/auth/*` e `/api/register`
+- **Nota importante**: no Next.js 16 o arquivo `middleware.ts` foi renomeado para `proxy.ts` (deprecation real, não erro nosso — ver `node_modules/next/dist/docs/.../proxy.md`). Como o projeto usa `src/app`, o arquivo precisa ficar em `src/proxy.ts` (mesmo nível do `app`), não na raiz do projeto — colocá-lo na raiz faz o Next simplesmente ignorá-lo, sem erro nenhum
+- Testado manualmente: sem sessão, `/` redireciona para `/login`; com sessão válida (Arthur e Ketlyn, login testado com as duas contas), `/` carrega normalmente
 
 ## Próximos passos
 
 ### Autenticação / onboarding
 - [x] Criar página `/login` (formulário de email + senha)
-- [x] Criar fluxo de registro (cria `User` + `Household` na primeira conta)
-- [ ] Proteger rotas autenticadas (middleware ou checagem de sessão nas páginas)
+- [x] Criar fluxo de registro (cria `User` + `Household` na primeira conta) — depois desabilitado (uso restrito)
+- [x] Proteger rotas autenticadas (`src/proxy.ts`)
 
 ### Funcionalidades principais (CRUD)
 - [ ] API/rotas para `Account` (criar, listar, editar contas)
@@ -82,4 +87,4 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
 - [ ] Definir `NEXTAUTH_SECRET`/`NEXTAUTH_URL` de produção quando for fazer deploy
-- [ ] Primeiro commit do trabalho atual (nada disso foi commitado ainda — está tudo como alterações locais)
+- [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém
