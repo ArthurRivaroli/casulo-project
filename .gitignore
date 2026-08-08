@@ -38,4 +38,15 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# prisma generated client
+/src/generated/prisma
+
 next-env.d.ts
+
+# AI agent tooling — locally cached skill references, regenerated automatically
+/.agents/
+/.windsurf/
+/.claude/skills/
+/.claude/settings.local.json
+skills-lock.json
