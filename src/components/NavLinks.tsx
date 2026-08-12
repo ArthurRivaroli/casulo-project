@@ -23,8 +23,8 @@ export function NavLinks() {
             href={link.href}
             className={
               isActive
-                ? "text-sm font-medium text-white"
-                : "text-sm font-medium text-indigo-200/70 hover:text-indigo-100"
+                ? "text-sm font-bold text-white"
+                : "text-sm font-bold text-indigo-200/70 hover:text-indigo-100"
             }
           >
             {link.label}

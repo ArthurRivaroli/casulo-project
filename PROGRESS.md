@@ -108,6 +108,13 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [src/lib/formatCurrency.ts](src/lib/formatCurrency.ts): função de formatação de moeda que estava duplicada em `(dashboard)/page.tsx` e `transacoes/TransactionRow.tsx`, agora centralizada
 - Validado com `tsc --noEmit`, `eslint` e `next build`
 
+### Moeda e ajustes visuais
+- Moeda trocada de Real (`pt-BR`/`BRL`) para Euro (`pt-PT`/`EUR`) em [src/lib/formatCurrency.ts](src/lib/formatCurrency.ts) — o app passou a ser usado em euros
+- Nome da household ("Casa Rivaroli") removido do header — [src/app/(dashboard)/layout.tsx](<src/app/(dashboard)/layout.tsx>) não busca mais o `Household` do banco, já que não tinha mais nenhum uso pra esse dado
+- Navegação do header em negrito ([src/components/NavLinks.tsx](src/components/NavLinks.tsx))
+- Títulos em negrito (`font-bold` em vez de `font-semibold`): título de cada página (`h1`), títulos de seção da dashboard (`h2`) e o rótulo dos cards de resumo (Saldo total/Receitas/Despesas)
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+
 ## Próximos passos
 
 ### Autenticação / onboarding

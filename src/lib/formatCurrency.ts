@@ -1,3 +1,3 @@
 export function formatCurrency(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return value.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
 }

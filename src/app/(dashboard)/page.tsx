@@ -43,7 +43,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
           Resumo
         </h1>
         <p className="mt-1 text-sm capitalize text-zinc-500 dark:text-zinc-400">
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="mb-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
           Contas
         </h2>
         {accounts.length === 0 ? (
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="mb-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
           Transações recentes
         </h2>
         {recentTransactions.length === 0 ? (
@@ -141,7 +141,7 @@ function SummaryCard({
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">{label}</p>
       <p className={`mt-2 text-2xl font-semibold ${toneClass}`}>
         {formatCurrency(value)}
       </p>
