@@ -74,6 +74,16 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - `src/app/layout.tsx`: metadata (título/descrição) e `lang` atualizados para o Casulo
 - Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/` corretamente marcada como dinâmica, por causa do `getServerSession`) — **não testado no navegador nesta sessão**: o ambiente remoto não tem `DATABASE_URL`/`NEXTAUTH_SECRET` configurados, então falta validar visualmente contra o Neon assim que houver acesso
 
+### CRUD de Contas
+- Implementado com **Server Actions** (padrão recomendado pelo guia `node_modules/next/dist/docs/01-app/02-guides/server-actions.md` para mutações no Next 16), não API routes
+- [src/app/(dashboard)/contas/actions.ts](<src/app/(dashboard)/contas/actions.ts>): `createAccount`, `updateAccount`, `deleteAccount` — cada uma reautentica a sessão e escopa por `householdId` (as actions são endpoints POST alcançáveis diretamente, então não dá pra confiar só na proteção do `proxy.ts`, conforme o próprio guia do Next recomenda)
+- [src/app/(dashboard)/contas/page.tsx](<src/app/(dashboard)/contas/page.tsx>): formulário de criação (Server Component puro, `<form action={createAccount}>`) + listagem
+- [src/app/(dashboard)/contas/AccountRow.tsx](<src/app/(dashboard)/contas/AccountRow.tsx>): client component com edição inline (toggle) e exclusão (com `confirm()`), usando `.bind(null, account.id)` nas actions
+- [src/lib/accountTypes.ts](src/lib/accountTypes.ts): labels de `AccountType` compartilhados entre a dashboard e `/contas`
+- [src/components/NavLinks.tsx](src/components/NavLinks.tsx): navegação (Resumo/Contas) no header, com destaque da rota ativa via `usePathname`
+- Exclusão de conta com transações vinculadas ainda vai falhar por causa da constraint de FK (`Restrict` por padrão) — não tratado agora porque não existe nenhuma transação no app ainda; revisitar quando o CRUD de `Transaction` existir
+- Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/contas` também dinâmica) — mesma ressalva: **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -82,18 +92,20 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Proteger rotas autenticadas (`src/proxy.ts`)
 
 ### Funcionalidades principais (CRUD)
-- [ ] API/rotas para `Account` (criar, listar, editar contas)
-- [ ] API/rotas para `Category` (criar, listar categorias de receita/despesa)
-- [ ] API/rotas para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
-- [ ] API/rotas para `Budget` (definir orçamento mensal por categoria)
-- [ ] API/rotas para `Goal` (criar e acompanhar metas de economia)
+- [x] Server Actions para `Account` (criar, listar, editar, excluir contas)
+- [ ] Server Actions/rotas para `Category` (criar, listar categorias de receita/despesa)
+- [ ] Server Actions/rotas para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
+- [ ] Server Actions/rotas para `Budget` (definir orçamento mensal por categoria)
+- [ ] Server Actions/rotas para `Goal` (criar e acompanhar metas de economia)
+- [ ] Tratar exclusão de `Account` com transações vinculadas (hoje quebra por FK constraint)
 
 ### Interface
 - [x] Layout/navegação principal pós-login (substituir a página padrão do Create Next App)
 - [x] Dashboard com resumo financeiro básico (saldo, receitas/despesas do mês, últimas transações)
+- [x] Tela de listagem/formulário para contas (`/contas`)
 - [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
-- [ ] Validar a dashboard no navegador contra dados reais do Neon
-- [ ] Telas de listagem/formulário para contas, categorias, transações, orçamentos e metas
+- [ ] Validar dashboard e `/contas` no navegador contra dados reais do Neon
+- [ ] Telas de listagem/formulário para categorias, transações, orçamentos e metas
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)

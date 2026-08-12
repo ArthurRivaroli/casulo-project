@@ -1,13 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { AccountType } from "@/generated/prisma/client";
-
-const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  BANK: "Banco",
-  CASH: "Dinheiro",
-  CREDIT_CARD: "Cartão de crédito",
-};
+import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
