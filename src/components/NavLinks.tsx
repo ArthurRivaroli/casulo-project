@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/contas", label: "Contas" },
   { href: "/categorias", label: "Categorias" },
   { href: "/orcamentos", label: "Orçamento" },
+  { href: "/metas", label: "Metas" },
 ];
 
 export function NavLinks() {

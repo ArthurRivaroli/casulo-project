@@ -122,6 +122,13 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Link "Orçamento" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
 - Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/orcamentos` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### CRUD de Metas
+- [src/app/(dashboard)/metas/actions.ts](<src/app/(dashboard)/metas/actions.ts>): `createGoal`, `updateGoal`, `deleteGoal` (mesmo padrão de sempre) + `contributeToGoal(id, formData)` — soma (ou subtrai, se o valor digitado for negativo) o campo `amount` ao `currentAmount` da meta, sem precisar abrir o formulário de edição inteiro; nunca deixa `currentAmount` ficar negativo (`Math.max(0, ...)`)
+- [src/app/(dashboard)/metas/GoalRow.tsx](<src/app/(dashboard)/metas/GoalRow.tsx>): edição inline (nome, valor guardado, meta, prazo), barra de progresso, e um formulário rápido de "Adicionar guardado" (some quando a meta já foi atingida)
+- [src/app/(dashboard)/metas/page.tsx](<src/app/(dashboard)/metas/page.tsx>): formulário de criação (nome, valor da meta, prazo opcional) + listagem ordenada por prazo (sem prazo fica por último, comportamento padrão do Postgres pra `ORDER BY ... ASC` com `NULL`)
+- Link "Metas" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
+- Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/metas` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -134,7 +141,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Server Actions para `Category` (criar, listar, editar, excluir categorias)
 - [x] Server Actions para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
 - [x] Server Actions para `Budget` (definir orçamento mensal por categoria de despesa)
-- [ ] Server Actions/rotas para `Goal` (criar e acompanhar metas de economia)
+- [x] Server Actions para `Goal` (criar, editar, excluir metas e registrar valor guardado)
 - [ ] Tratar exclusão de `Account`/`Category` com transações vinculadas (hoje quebra por FK constraint)
 
 ### Interface
@@ -144,9 +151,11 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Tela de listagem/formulário para categorias (`/categorias`)
 - [x] Tela de listagem/formulário para transações (`/transacoes`)
 - [x] Tela de orçamento por categoria com navegação por mês (`/orcamentos`)
+- [x] Tela de listagem/formulário para metas (`/metas`)
 - [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
-- [ ] Validar dashboard, `/contas`, `/categorias`, `/transacoes` e `/orcamentos` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
-- [ ] Tela de listagem/formulário para metas (`Goal`)
+- [ ] Validar dashboard, `/contas`, `/categorias`, `/transacoes`, `/orcamentos` e `/metas` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
+
+Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `Budget`, `Goal`) têm CRUD via Server Actions. O que falta é validação real no navegador e os dois itens de polimento acima.
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
