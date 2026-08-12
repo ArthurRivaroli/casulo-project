@@ -44,10 +44,27 @@ export async function updateAccount(id: string, formData: FormData) {
   revalidatePath("/");
 }
 
-export async function deleteAccount(id: string) {
+export type DeleteAccountState = { error: string | null };
+
+export async function deleteAccount(
+  id: string,
+  _prevState: DeleteAccountState,
+  _formData: FormData,
+): Promise<DeleteAccountState> {
   const householdId = await requireHouseholdId();
+
+  const transactionCount = await prisma.transaction.count({
+    where: { accountId: id, householdId },
+  });
+  if (transactionCount > 0) {
+    const noun = transactionCount === 1 ? "transação" : "transações";
+    return {
+      error: `Não é possível excluir: há ${transactionCount} ${noun} nesta conta.`,
+    };
+  }
 
   await prisma.account.deleteMany({ where: { id, householdId } });
   revalidatePath("/contas");
   revalidatePath("/");
+  return { error: null };
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import type { AccountType } from "@/generated/prisma/client";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { deleteAccount, updateAccount } from "./actions";
+import { deleteAccount, updateAccount, type DeleteAccountState } from "./actions";
+
+const initialDeleteState: DeleteAccountState = { error: null };
 
 export function AccountRow({
   account,
@@ -16,6 +18,10 @@ export function AccountRow({
   const [editing, setEditing] = useState(false);
   const updateAccountWithId = updateAccount.bind(null, account.id);
   const deleteAccountWithId = deleteAccount.bind(null, account.id);
+  const [deleteState, deleteAction, deletePending] = useActionState(
+    deleteAccountWithId,
+    initialDeleteState,
+  );
 
   if (editing) {
     return (
@@ -61,48 +67,54 @@ export function AccountRow({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div>
-        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-          {account.name}
-        </p>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {ACCOUNT_TYPE_LABELS[account.type]}
-        </p>
-      </div>
-      <div className="flex items-center gap-4">
-        <span
-          className={
-            balance > 0
-              ? "font-medium text-emerald-600"
-              : balance < 0
-                ? "font-medium text-red-600"
-                : "font-medium text-zinc-500 dark:text-zinc-400"
-          }
-        >
-          {formatCurrency(balance)}
-        </span>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-        >
-          Editar
-        </button>
-        <form action={deleteAccountWithId}>
-          <button
-            type="submit"
-            onClick={(e) => {
-              if (!confirm(`Excluir a conta "${account.name}"?`)) {
-                e.preventDefault();
-              }
-            }}
-            className="text-sm font-medium text-red-600 hover:text-red-500"
+    <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="font-medium text-zinc-900 dark:text-zinc-50">
+            {account.name}
+          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {ACCOUNT_TYPE_LABELS[account.type]}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span
+            className={
+              balance > 0
+                ? "font-medium text-emerald-600"
+                : balance < 0
+                  ? "font-medium text-red-600"
+                  : "font-medium text-zinc-500 dark:text-zinc-400"
+            }
           >
-            Excluir
+            {formatCurrency(balance)}
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Editar
           </button>
-        </form>
+          <form action={deleteAction}>
+            <button
+              type="submit"
+              disabled={deletePending}
+              onClick={(e) => {
+                if (!confirm(`Excluir a conta "${account.name}"?`)) {
+                  e.preventDefault();
+                }
+              }}
+              className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+            >
+              Excluir
+            </button>
+          </form>
+        </div>
       </div>
+      {deleteState.error && (
+        <p className="text-sm text-red-600">{deleteState.error}</p>
+      )}
     </div>
   );
 }

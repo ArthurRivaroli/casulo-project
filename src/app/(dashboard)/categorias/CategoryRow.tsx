@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import type { EntryType } from "@/generated/prisma/client";
 import { ENTRY_TYPE_LABELS } from "@/lib/entryTypes";
-import { deleteCategory, updateCategory } from "./actions";
+import { deleteCategory, updateCategory, type DeleteCategoryState } from "./actions";
 
 const DEFAULT_COLOR = "#6366f1";
+const initialDeleteState: DeleteCategoryState = { error: null };
 
 export function CategoryRow({
   category,
@@ -15,6 +16,10 @@ export function CategoryRow({
   const [editing, setEditing] = useState(false);
   const updateCategoryWithId = updateCategory.bind(null, category.id);
   const deleteCategoryWithId = deleteCategory.bind(null, category.id);
+  const [deleteState, deleteAction, deletePending] = useActionState(
+    deleteCategoryWithId,
+    initialDeleteState,
+  );
 
   if (editing) {
     return (
@@ -66,43 +71,49 @@ export function CategoryRow({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span
-          className="h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: category.color ?? DEFAULT_COLOR }}
-        />
-        <div>
-          <p className="font-medium text-zinc-900 dark:text-zinc-50">
-            {category.name}
-          </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {ENTRY_TYPE_LABELS[category.type]}
-          </p>
+    <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span
+            className="h-3 w-3 shrink-0 rounded-full"
+            style={{ backgroundColor: category.color ?? DEFAULT_COLOR }}
+          />
+          <div>
+            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+              {category.name}
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {ENTRY_TYPE_LABELS[category.type]}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Editar
+          </button>
+          <form action={deleteAction}>
+            <button
+              type="submit"
+              disabled={deletePending}
+              onClick={(e) => {
+                if (!confirm(`Excluir a categoria "${category.name}"?`)) {
+                  e.preventDefault();
+                }
+              }}
+              className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+            >
+              Excluir
+            </button>
+          </form>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-        >
-          Editar
-        </button>
-        <form action={deleteCategoryWithId}>
-          <button
-            type="submit"
-            onClick={(e) => {
-              if (!confirm(`Excluir a categoria "${category.name}"?`)) {
-                e.preventDefault();
-              }
-            }}
-            className="text-sm font-medium text-red-600 hover:text-red-500"
-          >
-            Excluir
-          </button>
-        </form>
-      </div>
+      {deleteState.error && (
+        <p className="text-sm text-red-600">{deleteState.error}</p>
+      )}
     </div>
   );
 }

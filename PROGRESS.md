@@ -129,6 +129,15 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Link "Metas" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
 - Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/metas` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### Exclusão de Conta/Categoria com dados vinculados
+- Antes disso, excluir uma conta ou categoria com transações (ou orçamentos, no caso de categoria) vinculadas quebrava com um erro de constraint de chave estrangeira do Postgres — sem mensagem amigável, só o crash genérico do Next
+- Seguido o padrão oficial do Next.js pra "expected errors" (`node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md`): em vez de `throw`, as actions de exclusão agora **retornam** `{ error: string | null }` e são conectadas via `useActionState` no componente, que exibe a mensagem inline — `throw` fica reservado pra bugs de verdade (que caem no error boundary genérico), não pra erros esperados como "essa conta ainda tem transações"
+  - [src/app/(dashboard)/contas/actions.ts](<src/app/(dashboard)/contas/actions.ts>): `deleteAccount` agora checa `prisma.transaction.count` antes de excluir e retorna erro descritivo se houver transações
+  - [src/app/(dashboard)/categorias/actions.ts](<src/app/(dashboard)/categorias/actions.ts>): `deleteCategory` checa `transaction.count` **e** `budget.count` (uma categoria pode estar em uso nos dois lugares)
+  - [src/app/(dashboard)/contas/AccountRow.tsx](<src/app/(dashboard)/contas/AccountRow.tsx>) e [src/app/(dashboard)/categorias/CategoryRow.tsx](<src/app/(dashboard)/categorias/CategoryRow.tsx>): usam `useActionState` pro botão Excluir, mostram a mensagem de erro abaixo da linha e desabilitam o botão enquanto a exclusão está em andamento
+- [eslint.config.mjs](eslint.config.mjs): adicionado `argsIgnorePattern: "^_"` em `no-unused-vars`, já que a assinatura exigida por `useActionState` (`(id, prevState, formData)`) deixa `prevState`/`formData` sem uso nessas actions
+- Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -142,7 +151,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Server Actions para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
 - [x] Server Actions para `Budget` (definir orçamento mensal por categoria de despesa)
 - [x] Server Actions para `Goal` (criar, editar, excluir metas e registrar valor guardado)
-- [ ] Tratar exclusão de `Account`/`Category` com transações vinculadas (hoje quebra por FK constraint)
+- [x] Tratar exclusão de `Account`/`Category` com transações/orçamentos vinculados (mensagem amigável via `useActionState`, sem quebrar a página)
 
 ### Interface
 - [x] Layout/navegação principal pós-login (substituir a página padrão do Create Next App)

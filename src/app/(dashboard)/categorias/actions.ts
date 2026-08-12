@@ -47,9 +47,38 @@ export async function updateCategory(id: string, formData: FormData) {
   revalidatePath("/categorias");
 }
 
-export async function deleteCategory(id: string) {
+export type DeleteCategoryState = { error: string | null };
+
+export async function deleteCategory(
+  id: string,
+  _prevState: DeleteCategoryState,
+  _formData: FormData,
+): Promise<DeleteCategoryState> {
   const householdId = await requireHouseholdId();
+
+  const [transactionCount, budgetCount] = await Promise.all([
+    prisma.transaction.count({ where: { categoryId: id, householdId } }),
+    prisma.budget.count({ where: { categoryId: id, householdId } }),
+  ]);
+
+  if (transactionCount > 0 || budgetCount > 0) {
+    const parts: string[] = [];
+    if (transactionCount > 0) {
+      parts.push(
+        `${transactionCount} ${transactionCount === 1 ? "transação" : "transações"}`,
+      );
+    }
+    if (budgetCount > 0) {
+      parts.push(
+        `${budgetCount} ${budgetCount === 1 ? "orçamento" : "orçamentos"}`,
+      );
+    }
+    return {
+      error: `Não é possível excluir: há ${parts.join(" e ")} usando esta categoria.`,
+    };
+  }
 
   await prisma.category.deleteMany({ where: { id, householdId } });
   revalidatePath("/categorias");
+  return { error: null };
 }
