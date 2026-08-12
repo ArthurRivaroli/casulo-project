@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/transacoes", label: "Transações" },
   { href: "/contas", label: "Contas" },
   { href: "/categorias", label: "Categorias" },
+  { href: "/orcamentos", label: "Orçamento" },
 ];
 
 export function NavLinks() {

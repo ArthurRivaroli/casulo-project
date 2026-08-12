@@ -115,6 +115,13 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Títulos em negrito (`font-bold` em vez de `font-semibold`): título de cada página (`h1`), títulos de seção da dashboard (`h2`) e o rótulo dos cards de resumo (Saldo total/Receitas/Despesas)
 - Validado com `tsc --noEmit`, `eslint` e `next build`
 
+### CRUD de Orçamento
+- [src/app/(dashboard)/orcamentos/actions.ts](<src/app/(dashboard)/orcamentos/actions.ts>): `setBudget(categoryId, month, year, formData)` — faz `upsert` usando a constraint única `householdId_categoryId_month_year` do schema; se o campo vier vazio ou ≤ 0, apaga o orçamento daquele mês em vez de gravar zero
+- [src/app/(dashboard)/orcamentos/page.tsx](<src/app/(dashboard)/orcamentos/page.tsx>): uma linha por categoria de **despesa** (orçamento só faz sentido pra categorias `EXPENSE`, categorias de receita não aparecem aqui) com o valor já gasto no mês, campo de orçamento editável e barra de progresso (verde/amarelo/vermelho conforme o percentual); navegação entre meses via `?month=&year=` na URL (sem JS, só `Link`)
+- Usa `PageProps<'/orcamentos'>` (helper gerado pelo Next) já que `searchParams` é uma Promise no Next 16
+- Link "Orçamento" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
+- Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/orcamentos` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -126,7 +133,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Server Actions para `Account` (criar, listar, editar, excluir contas)
 - [x] Server Actions para `Category` (criar, listar, editar, excluir categorias)
 - [x] Server Actions para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
-- [ ] Server Actions/rotas para `Budget` (definir orçamento mensal por categoria)
+- [x] Server Actions para `Budget` (definir orçamento mensal por categoria de despesa)
 - [ ] Server Actions/rotas para `Goal` (criar e acompanhar metas de economia)
 - [ ] Tratar exclusão de `Account`/`Category` com transações vinculadas (hoje quebra por FK constraint)
 
@@ -136,9 +143,10 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Tela de listagem/formulário para contas (`/contas`)
 - [x] Tela de listagem/formulário para categorias (`/categorias`)
 - [x] Tela de listagem/formulário para transações (`/transacoes`)
+- [x] Tela de orçamento por categoria com navegação por mês (`/orcamentos`)
 - [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
-- [ ] Validar dashboard, `/contas`, `/categorias` e `/transacoes` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
-- [ ] Telas de listagem/formulário para orçamentos e metas
+- [ ] Validar dashboard, `/contas`, `/categorias`, `/transacoes` e `/orcamentos` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
+- [ ] Tela de listagem/formulário para metas (`Goal`)
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
