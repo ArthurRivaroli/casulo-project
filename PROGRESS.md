@@ -84,6 +84,15 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Exclusão de conta com transações vinculadas ainda vai falhar por causa da constraint de FK (`Restrict` por padrão) — não tratado agora porque não existe nenhuma transação no app ainda; revisitar quando o CRUD de `Transaction` existir
 - Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/contas` também dinâmica) — mesma ressalva: **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### CRUD de Categorias
+- Mesmo padrão do CRUD de Contas (Server Actions, reautenticação por action, escopo por `householdId`):
+  - [src/app/(dashboard)/categorias/actions.ts](<src/app/(dashboard)/categorias/actions.ts>): `createCategory`, `updateCategory`, `deleteCategory`
+  - [src/app/(dashboard)/categorias/page.tsx](<src/app/(dashboard)/categorias/page.tsx>): formulário de criação (nome, tipo receita/despesa, cor) + listagem
+  - [src/app/(dashboard)/categorias/CategoryRow.tsx](<src/app/(dashboard)/categorias/CategoryRow.tsx>): edição inline e exclusão, com indicador de cor (bolinha colorida) usando o campo `color` do schema (input `type="color"`, padrão `#6366f1`)
+  - [src/lib/entryTypes.ts](src/lib/entryTypes.ts): labels de `EntryType` (Receita/Despesa) compartilhados
+- Link "Categorias" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
+- Mesma ressalva de sempre: validado com `tsc --noEmit`, `eslint` e `next build` (rota `/categorias` dinâmica), mas **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -93,19 +102,20 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 
 ### Funcionalidades principais (CRUD)
 - [x] Server Actions para `Account` (criar, listar, editar, excluir contas)
-- [ ] Server Actions/rotas para `Category` (criar, listar categorias de receita/despesa)
-- [ ] Server Actions/rotas para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
+- [x] Server Actions para `Category` (criar, listar, editar, excluir categorias)
+- [ ] Server Actions/rotas para `Transaction` (lançar receitas/despesas, listar, editar, excluir) — próximo passo natural, já existem contas e categorias pra vincular
 - [ ] Server Actions/rotas para `Budget` (definir orçamento mensal por categoria)
 - [ ] Server Actions/rotas para `Goal` (criar e acompanhar metas de economia)
-- [ ] Tratar exclusão de `Account` com transações vinculadas (hoje quebra por FK constraint)
+- [ ] Tratar exclusão de `Account`/`Category` com transações vinculadas (hoje quebra por FK constraint)
 
 ### Interface
 - [x] Layout/navegação principal pós-login (substituir a página padrão do Create Next App)
 - [x] Dashboard com resumo financeiro básico (saldo, receitas/despesas do mês, últimas transações)
 - [x] Tela de listagem/formulário para contas (`/contas`)
+- [x] Tela de listagem/formulário para categorias (`/categorias`)
 - [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
-- [ ] Validar dashboard e `/contas` no navegador contra dados reais do Neon
-- [ ] Telas de listagem/formulário para categorias, transações, orçamentos e metas
+- [ ] Validar dashboard, `/contas` e `/categorias` no navegador contra dados reais do Neon
+- [ ] Telas de listagem/formulário para transações, orçamentos e metas
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
