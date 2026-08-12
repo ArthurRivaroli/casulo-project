@@ -65,6 +65,15 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - **Nota importante**: no Next.js 16 o arquivo `middleware.ts` foi renomeado para `proxy.ts` (deprecation real, não erro nosso — ver `node_modules/next/dist/docs/.../proxy.md`). Como o projeto usa `src/app`, o arquivo precisa ficar em `src/proxy.ts` (mesmo nível do `app`), não na raiz do projeto — colocá-lo na raiz faz o Next simplesmente ignorá-lo, sem erro nenhum
 - Testado manualmente: sem sessão, `/` redireciona para `/login`; com sessão válida (Arthur e Ketlyn, login testado com as duas contas), `/` carrega normalmente
 
+### Dashboard / home pós-login
+- Criado grupo de rotas `src/app/(dashboard)/` para abrigar as páginas autenticadas com um shell compartilhado:
+  - [src/app/(dashboard)/layout.tsx](<src/app/(dashboard)/layout.tsx>): busca a sessão (`getServerSession`, redireciona para `/login` se ausente, redundante com o `proxy.ts` mas defensivo), busca o nome da `Household` e renderiza o header (logo, nome da casa, nome do usuário, botão sair) na mesma identidade visual roxo/violeta do login
+  - [src/components/SignOutButton.tsx](src/components/SignOutButton.tsx): client component que chama `signOut` do NextAuth
+  - [src/app/(dashboard)/page.tsx](<src/app/(dashboard)/page.tsx>): resumo financeiro do mês (saldo total, receitas, despesas), lista de contas e últimas transações — com estado vazio (`EmptyState`) para quando ainda não há contas/transações cadastradas, já que os CRUDs ainda não existem
+- Página padrão do Create Next App (`src/app/page.tsx`) removida
+- `src/app/layout.tsx`: metadata (título/descrição) e `lang` atualizados para o Casulo
+- Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/` corretamente marcada como dinâmica, por causa do `getServerSession`) — **não testado no navegador nesta sessão**: o ambiente remoto não tem `DATABASE_URL`/`NEXTAUTH_SECRET` configurados, então falta validar visualmente contra o Neon assim que houver acesso
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -80,8 +89,10 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [ ] API/rotas para `Goal` (criar e acompanhar metas de economia)
 
 ### Interface
-- [ ] Layout/navegação principal pós-login (substituir a página padrão do Create Next App)
-- [ ] Dashboard com resumo financeiro (saldo, gastos por categoria) usando Recharts
+- [x] Layout/navegação principal pós-login (substituir a página padrão do Create Next App)
+- [x] Dashboard com resumo financeiro básico (saldo, receitas/despesas do mês, últimas transações)
+- [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
+- [ ] Validar a dashboard no navegador contra dados reais do Neon
 - [ ] Telas de listagem/formulário para contas, categorias, transações, orçamentos e metas
 
 ### Outros
