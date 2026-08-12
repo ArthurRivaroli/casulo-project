@@ -93,6 +93,16 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Link "Categorias" adicionado em [src/components/NavLinks.tsx](src/components/NavLinks.tsx)
 - Mesma ressalva de sempre: validado com `tsc --noEmit`, `eslint` e `next build` (rota `/categorias` dinâmica), mas **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### CRUD de Transações
+- [src/app/(dashboard)/transacoes/actions.ts](<src/app/(dashboard)/transacoes/actions.ts>): `createTransaction`, `updateTransaction`, `deleteTransaction` — além do escopo por `householdId`, cada action revalida que a `accountId`/`categoryId` recebidas pertencem à household antes de gravar (não dá pra confiar no valor cru do form)
+- [src/app/(dashboard)/transacoes/TransactionFields.tsx](<src/app/(dashboard)/transacoes/TransactionFields.tsx>): client component com os campos (tipo, valor, data, conta, categoria, descrição), compartilhado entre o formulário de criação e a edição inline — filtra as opções de categoria pelo tipo (receita/despesa) escolhido
+- [src/app/(dashboard)/transacoes/TransactionRow.tsx](<src/app/(dashboard)/transacoes/TransactionRow.tsx>): listagem com edição inline e exclusão (mesmo padrão de Contas/Categorias)
+- [src/app/(dashboard)/transacoes/page.tsx](<src/app/(dashboard)/transacoes/page.tsx>): busca contas/categorias/transações da household; se não houver conta ou categoria cadastrada, esconde o formulário e mostra um aviso com link pra `/contas` e/ou `/categorias`
+- Corrigido `src/lib/auth.ts` e `src/types/next-auth.d.ts`: sessão não expunha `user.id` (só `householdId`), necessário pra gravar o `userId` de cada transação — adicionado `session.user.id = token.sub` no callback `session` (o `sub` já vem preenchido pelo NextAuth com o id do usuário desde o login)
+- Datas tratadas como meio-dia local (`\`${value}T00:00:00\``) na gravação e reconstruídas a partir dos componentes locais (não `toISOString`) na edição, pra evitar o campo de data pular um dia por causa de fuso horário
+- Excluir uma conta/categoria com transações vinculadas ainda vai falhar por FK constraint — segue como pendência conhecida
+- Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/transacoes` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -103,7 +113,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 ### Funcionalidades principais (CRUD)
 - [x] Server Actions para `Account` (criar, listar, editar, excluir contas)
 - [x] Server Actions para `Category` (criar, listar, editar, excluir categorias)
-- [ ] Server Actions/rotas para `Transaction` (lançar receitas/despesas, listar, editar, excluir) — próximo passo natural, já existem contas e categorias pra vincular
+- [x] Server Actions para `Transaction` (lançar receitas/despesas, listar, editar, excluir)
 - [ ] Server Actions/rotas para `Budget` (definir orçamento mensal por categoria)
 - [ ] Server Actions/rotas para `Goal` (criar e acompanhar metas de economia)
 - [ ] Tratar exclusão de `Account`/`Category` com transações vinculadas (hoje quebra por FK constraint)
@@ -113,9 +123,10 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Dashboard com resumo financeiro básico (saldo, receitas/despesas do mês, últimas transações)
 - [x] Tela de listagem/formulário para contas (`/contas`)
 - [x] Tela de listagem/formulário para categorias (`/categorias`)
+- [x] Tela de listagem/formulário para transações (`/transacoes`)
 - [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
-- [ ] Validar dashboard, `/contas` e `/categorias` no navegador contra dados reais do Neon
-- [ ] Telas de listagem/formulário para transações, orçamentos e metas
+- [ ] Validar dashboard, `/contas`, `/categorias` e `/transacoes` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
+- [ ] Telas de listagem/formulário para orçamentos e metas
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
