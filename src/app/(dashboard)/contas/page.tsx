@@ -8,10 +8,27 @@ export default async function ContasPage() {
   const session = await getServerSession(authOptions);
   const householdId = session!.user.householdId;
 
-  const accounts = await prisma.account.findMany({
-    where: { householdId },
-    orderBy: { name: "asc" },
-  });
+  const [accounts, transactionSums] = await Promise.all([
+    prisma.account.findMany({
+      where: { householdId },
+      orderBy: { name: "asc" },
+    }),
+    prisma.transaction.groupBy({
+      by: ["accountId", "type"],
+      where: { householdId },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  const balanceByAccount = new Map<string, number>();
+  for (const sum of transactionSums) {
+    const amount = sum._sum.amount ?? 0;
+    const current = balanceByAccount.get(sum.accountId) ?? 0;
+    balanceByAccount.set(
+      sum.accountId,
+      current + (sum.type === "INCOME" ? amount : -amount),
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -76,7 +93,11 @@ export default async function ContasPage() {
       ) : (
         <div className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white shadow-sm dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
           {accounts.map((account) => (
-            <AccountRow key={account.id} account={account} />
+            <AccountRow
+              key={account.id}
+              account={account}
+              balance={balanceByAccount.get(account.id) ?? 0}
+            />
           ))}
         </div>
       )}

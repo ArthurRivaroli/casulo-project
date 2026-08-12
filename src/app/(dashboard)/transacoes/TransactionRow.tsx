@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import type { EntryType } from "@/generated/prisma/client";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { deleteTransaction, updateTransaction } from "./actions";
 import { TransactionFields } from "./TransactionFields";
 
 type AccountOption = { id: string; name: string };
 type CategoryOption = { id: string; name: string; type: EntryType };
-
-function formatCurrency(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
 
 function toDateInputValue(date: Date) {
   const year = date.getFullYear();

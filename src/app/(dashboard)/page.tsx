@@ -2,10 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
-
-function formatCurrency(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
+import { formatCurrency } from "@/lib/formatCurrency";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);

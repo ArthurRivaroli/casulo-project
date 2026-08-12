@@ -3,12 +3,15 @@
 import { useState } from "react";
 import type { AccountType } from "@/generated/prisma/client";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { deleteAccount, updateAccount } from "./actions";
 
 export function AccountRow({
   account,
+  balance,
 }: {
   account: { id: string; name: string; type: AccountType };
+  balance: number;
 }) {
   const [editing, setEditing] = useState(false);
   const updateAccountWithId = updateAccount.bind(null, account.id);
@@ -67,7 +70,18 @@ export function AccountRow({
           {ACCOUNT_TYPE_LABELS[account.type]}
         </p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
+        <span
+          className={
+            balance > 0
+              ? "font-medium text-emerald-600"
+              : balance < 0
+                ? "font-medium text-red-600"
+                : "font-medium text-zinc-500 dark:text-zinc-400"
+          }
+        >
+          {formatCurrency(balance)}
+        </span>
         <button
           type="button"
           onClick={() => setEditing(true)}

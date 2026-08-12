@@ -103,6 +103,11 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - Excluir uma conta/categoria com transações vinculadas ainda vai falhar por FK constraint — segue como pendência conhecida
 - Validado com `tsc --noEmit`, `eslint` e `next build` (rota `/transacoes` dinâmica) — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### Saldo por conta
+- [src/app/(dashboard)/contas/page.tsx](<src/app/(dashboard)/contas/page.tsx>) agora calcula o saldo de cada conta com `prisma.transaction.groupBy({ by: ["accountId", "type"], _sum: { amount: true } })` e passa pra [AccountRow.tsx](<src/app/(dashboard)/contas/AccountRow.tsx>), que exibe o valor (verde/vermelho/neutro conforme o sinal)
+- [src/lib/formatCurrency.ts](src/lib/formatCurrency.ts): função de formatação de moeda que estava duplicada em `(dashboard)/page.tsx` e `transacoes/TransactionRow.tsx`, agora centralizada
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+
 ## Próximos passos
 
 ### Autenticação / onboarding
