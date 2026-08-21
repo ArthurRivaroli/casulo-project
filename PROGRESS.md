@@ -171,6 +171,7 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Tela de orçamento por categoria com navegação por mês (`/orcamentos`)
 - [x] Tela de listagem/formulário para metas (`/metas`)
 - [x] Gráficos com Recharts na dashboard (gasto por categoria, evolução do saldo)
+- [x] PWA instalável (manifest + ícones + aviso de instalação no iOS) — ver seção própria abaixo
 - [ ] Validar dashboard, `/contas`, `/categorias`, `/transacoes`, `/orcamentos` e `/metas` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
 
 Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `Budget`, `Goal`) têm CRUD via Server Actions, e a dashboard já tem gráficos. O que falta é validação real no navegador.
@@ -183,6 +184,17 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - Validado com `tsc --noEmit`, `eslint` e `next build`
 - Segue pendente (ação do usuário, fora do código): definir `NEXTAUTH_SECRET` e `NEXTAUTH_URL` de produção no painel do serviço de deploy (ex: Vercel), com valores diferentes dos usados em `.env` local
 - Segue pendente: trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração) — instruções passadas ao usuário, aguardando confirmação
+
+### PWA instalável (Camada 1)
+- Escopo decidido com o usuário: só instalável (manifest + ícones + aviso no iOS), sem push notifications nem service worker/offline — isso ficaria pra uma "Camada 2" bem mais trabalhosa (chaves VAPID, guardar inscrições no banco) que não faz sentido ainda pra um app de 2 pessoas
+- [src/app/manifest.ts](<src/app/manifest.ts>): nome, cores (`#1e1b4b`, o indigo-950 do header), `display: "standalone"`
+- [src/app/icon.tsx](<src/app/icon.tsx>) e [src/app/apple-icon.tsx](<src/app/apple-icon.tsx>): ícones gerados em código via `ImageResponse` (`next/og`), não arquivos estáticos — reaproveitam o gradiente roxo/violeta da marca com uma versão simplificada do casulo (uma elipse branca com contorno preto); o desenho detalhado do [Logo.tsx](src/components/Logo.tsx) não foi replicado porque não ficaria legível em 512×512 nem seria garantidamente compatível com o subconjunto de CSS que o satori (motor por trás do `ImageResponse`) suporta
+- [src/lib/appIconMark.tsx](src/lib/appIconMark.tsx): desenho do ícone compartilhado entre `icon.tsx` (512×512, geral) e `apple-icon.tsx` (180×180, padrão da Apple pro ícone de tela de início)
+- Validado renderizando de verdade: rodei `next build` (que gera os ícones estaticamente) e conferi o PNG resultante — bateu com a paleta esperada
+- [src/app/layout.tsx](<src/app/layout.tsx>): adicionado `appleWebApp` (modo standalone no iOS, sem a barra do Safari) e um `viewport.themeColor` (a barra de status/instalação usa a cor da marca em vez do cinza padrão)
+- [src/components/InstallPrompt.tsx](src/components/InstallPrompt.tsx): aviso discreto só pro Safari iOS (que não mostra prompt de instalação automático como o Chrome/Android), com "Dispensar" salvo no `localStorage`; usado em [src/app/(dashboard)/layout.tsx](<src/app/(dashboard)/layout.tsx>)
+- **Nota importante**: sem service worker, o Chrome/Android pode não disparar o banner *automático* de instalação (o "mini-infobar"), mas "Adicionar à tela de início" continua disponível manualmente pelo menu do navegador em qualquer plataforma — isso já é suficiente pro objetivo de "instalar como app"
+- Validado com `tsc --noEmit`, `eslint` e `next build` — os ícones/manifest são estáticos e não dependem do banco, então essa parte já foi validada de verdade (não só compilada)
 
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { Logo } from "@/components/Logo";
 import { NavLinks } from "@/components/NavLinks";
 import { SignOutButton } from "@/components/SignOutButton";
@@ -31,7 +32,8 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-8 sm:px-6">
+        <InstallPrompt />
         {children}
       </main>
     </div>
