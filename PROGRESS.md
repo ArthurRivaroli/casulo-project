@@ -175,7 +175,14 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 
 Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `Budget`, `Goal`) têm CRUD via Server Actions, e a dashboard já tem gráficos. O que falta é validação real no navegador.
 
+### Preparação para deploy em produção
+- Achado um problema real que ia quebrar o build em produção: `package.json` não rodava `prisma generate` em lugar nenhum. Como `src/generated/prisma` é gerado (não vai pro git — `.gitignore`), um deploy limpo (`npm install` + `next build`) simplesmente não encontraria `@/generated/prisma/client` e quebraria. Adicionado `"postinstall": "prisma generate"` em [package.json](package.json), que roda automaticamente depois de `npm install` — tanto localmente (não precisa mais lembrar de rodar `npx prisma generate` à mão) quanto no Vercel
+- Testado: apaguei `src/generated` e rodei `npm install` de novo — o `postinstall` gerou o client sozinho
+- `next.config.ts` não precisa de nada especial pro Vercel (isso só seria necessário pra self-host/Docker com `output: "standalone"`)
+- Notado (não corrigido): `npm audit` acusa 3 vulnerabilidades "high" em `deepmerge-ts` (dependência transitiva do `@prisma/config`, usada só pra ler `prisma.config.ts`) — é uma exaustão de pilha ao mesclar objetos profundamente recursivos, risco baixo pra esse projeto (config pequeno, sem input de usuário nele). A correção automática (`npm audit fix --force`) rebaixaria o Prisma pra v6, quebrando todo o setup do gerador `prisma-client` customizado — não fiz isso sem confirmar com o usuário
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+- Segue pendente (ação do usuário, fora do código): definir `NEXTAUTH_SECRET` e `NEXTAUTH_URL` de produção no painel do serviço de deploy (ex: Vercel), com valores diferentes dos usados em `.env` local
+- Segue pendente: trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração) — instruções passadas ao usuário, aguardando confirmação
+
 ### Outros
-- [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)
-- [ ] Definir `NEXTAUTH_SECRET`/`NEXTAUTH_URL` de produção quando for fazer deploy
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém
