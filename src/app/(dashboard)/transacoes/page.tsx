@@ -44,7 +44,11 @@ export default async function TransacoesPage() {
           action={createTransaction}
           className="flex flex-wrap items-end gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
         >
-          <TransactionFields accounts={accounts} categories={categories} />
+          <TransactionFields
+            accounts={accounts}
+            categories={categories}
+            showRecurrenceOptions
+          />
           <button
             type="submit"
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"

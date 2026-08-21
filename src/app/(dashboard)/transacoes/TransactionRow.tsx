@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { EntryType } from "@/generated/prisma/client";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { RecurrenceBadge } from "@/components/RecurrenceBadge";
 import { deleteTransaction, updateTransaction } from "./actions";
 import { TransactionFields } from "./TransactionFields";
 
@@ -31,6 +32,9 @@ export function TransactionRow({
     categoryId: string;
     account: { name: string };
     category: { name: string };
+    isFixed: boolean;
+    installmentNumber: number | null;
+    installmentTotal: number | null;
   };
   accounts: AccountOption[];
   categories: CategoryOption[];
@@ -80,9 +84,16 @@ export function TransactionRow({
   return (
     <div className="flex items-center justify-between px-4 py-3">
       <div>
-        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-          {transaction.description || transaction.category.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-zinc-900 dark:text-zinc-50">
+            {transaction.description || transaction.category.name}
+          </p>
+          <RecurrenceBadge
+            isFixed={transaction.isFixed}
+            installmentNumber={transaction.installmentNumber}
+            installmentTotal={transaction.installmentTotal}
+          />
+        </div>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {transaction.category.name} · {transaction.account.name} ·{" "}
           {transaction.date.toLocaleDateString("pt-BR")}

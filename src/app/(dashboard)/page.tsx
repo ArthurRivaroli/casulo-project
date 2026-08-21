@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { RecurrenceBadge } from "@/components/RecurrenceBadge";
 import { ExpenseByCategoryChart } from "./ExpenseByCategoryChart";
 import { MonthlyBalanceChart } from "./MonthlyBalanceChart";
 
@@ -157,9 +158,16 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between px-4 py-3"
               >
                 <div>
-                  <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                    {t.description || t.category.name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                      {t.description || t.category.name}
+                    </p>
+                    <RecurrenceBadge
+                      isFixed={t.isFixed}
+                      installmentNumber={t.installmentNumber}
+                      installmentTotal={t.installmentTotal}
+                    />
+                  </div>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     {t.category.name} · {t.account.name} ·{" "}
                     {t.date.toLocaleDateString("pt-BR")}

@@ -207,5 +207,17 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
   - [src/app/(dashboard)/layout.tsx](<src/app/(dashboard)/layout.tsx>): `MobileNav` visível só abaixo do breakpoint `sm`, nav horizontal + nome/sair visíveis só a partir do `sm` (`hidden sm:flex` / `sm:hidden`)
 - Validado com `tsc --noEmit`, `eslint` e `next build` — layout/JS validado, mas o comportamento visual da gaveta em si ainda não foi visto num navegador de verdade (precisa de outro teste do usuário)
 
+### Despesa fixa e compra parcelada
+- Decidido com o usuário: as duas opções **geram transações de verdade** (não são só uma etiqueta) — "Fixa" repete o mesmo valor todo mês por N meses; "Parcelada" divide o valor total em N parcelas mensais
+- **Mudança de schema** (primeira desde o início do projeto) em [prisma/schema.prisma](prisma/schema.prisma), `Transaction` ganhou: `isFixed` (bool), `installmentNumber`/`installmentTotal` (int, nulos fora de parcelamento) e `recurrenceGroupId` (liga as transações irmãs geradas juntas, hoje só informativo)
+- **⚠️ Requer migração no banco**: criada à mão em [prisma/migrations/20260821120000_add_transaction_recurrence/migration.sql](<prisma/migrations/20260821120000_add_transaction_recurrence/migration.sql>) (só `ADD COLUMN`, sem risco de perda de dado) — escrita manualmente porque este ambiente não tem acesso ao Neon pra rodar `prisma migrate dev`. **Antes de testar, rodar `npx prisma migrate deploy` localmente** (aplica as migrações pendentes direto, sem precisar de shadow database) — sem isso o app vai quebrar tentando ler/gravar colunas que ainda não existem no banco
+- [src/app/(dashboard)/transacoes/actions.ts](<src/app/(dashboard)/transacoes/actions.ts>): `createTransaction` ganhou os modos `FIXED`/`INSTALLMENT` — usa `prisma.transaction.createMany` pra criar todas as ocorrências de uma vez
+  - `addMonthsClamped`: soma meses a uma data "clampando" o dia (ex: 31 de janeiro + 1 mês vira 28/29 de fevereiro, não vira março) — testado à parte, inclusive em ano bissexto
+  - `splitAmount`: divide o valor total em N parcelas em centavos exatos, distribuindo o resto do arredondamento nas primeiras parcelas em vez de jogar tudo na última — testado à parte (soma sempre bate com o total, mesmo com centavos quebrados)
+  - Editar ou excluir uma transação continua afetando só aquela linha (decisão deliberada: gerar em lote na criação, mas sem lógica de "editar a série toda" — mais simples e sem risco de apagar várias linhas por engano)
+- [src/app/(dashboard)/transacoes/TransactionFields.tsx](<src/app/(dashboard)/transacoes/TransactionFields.tsx>): campo "Repetição" (Nenhuma/Fixa/Parcelada) só aparece no formulário de criação (`showRecurrenceOptions`), não na edição inline de uma ocorrência já existente; o rótulo do valor muda pra "Valor total" quando parcelada
+- [src/components/RecurrenceBadge.tsx](src/components/RecurrenceBadge.tsx): badge "Fixa" ou "3/12" ao lado da descrição — usado em [TransactionRow.tsx](<src/app/(dashboard)/transacoes/TransactionRow.tsx>) e nas "Transações recentes" da dashboard
+- Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** (precisa da migração aplicada primeiro)
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

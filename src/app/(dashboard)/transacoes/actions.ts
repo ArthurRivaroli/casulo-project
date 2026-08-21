@@ -1,10 +1,13 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { EntryType } from "@/generated/prisma/client";
+
+type Recurrence = "NONE" | "FIXED" | "INSTALLMENT";
 
 async function requireSession() {
   const session = await getServerSession(authOptions);
@@ -29,6 +32,46 @@ function parseDate(value: FormDataEntryValue | null): Date {
   return date;
 }
 
+function parseRecurrence(value: FormDataEntryValue | null): Recurrence {
+  if (value === "FIXED" || value === "INSTALLMENT") return value;
+  return "NONE";
+}
+
+function parseRecurrenceCount(value: FormDataEntryValue | null): number {
+  const count = Number(value);
+  if (!Number.isInteger(count) || count < 2 || count > 60) {
+    throw new Error("Informe um número de meses/parcelas entre 2 e 60.");
+  }
+  return count;
+}
+
+// Adds `months` to `date`, clamping the day so e.g. Jan 31 + 1 month
+// lands on Feb 28/29 instead of overflowing into March.
+function addMonthsClamped(date: Date, months: number): Date {
+  const day = date.getDate();
+  const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const lastDayOfTargetMonth = new Date(
+    target.getFullYear(),
+    target.getMonth() + 1,
+    0,
+  ).getDate();
+  target.setDate(Math.min(day, lastDayOfTargetMonth));
+  return target;
+}
+
+// Splits `total` into `parts` amounts (rounded to cents) that sum back
+// to exactly `total`, spreading the rounding remainder across the
+// first installments instead of dumping it all on the last one.
+function splitAmount(total: number, parts: number): number[] {
+  const totalCents = Math.round(total * 100);
+  const baseCents = Math.floor(totalCents / parts);
+  const remainder = totalCents - baseCents * parts;
+  return Array.from(
+    { length: parts },
+    (_, i) => (baseCents + (i < remainder ? 1 : 0)) / 100,
+  );
+}
+
 async function readTransactionFields(formData: FormData, householdId: string) {
   const type = parseEntryType(formData.get("type"));
   const amount = parseAmount(formData.get("amount"));
@@ -50,14 +93,49 @@ async function readTransactionFields(formData: FormData, householdId: string) {
 export async function createTransaction(formData: FormData) {
   const user = await requireSession();
   const fields = await readTransactionFields(formData, user.householdId);
+  const recurrence = parseRecurrence(formData.get("recurrence"));
 
-  await prisma.transaction.create({
-    data: {
-      ...fields,
-      householdId: user.householdId,
-      userId: user.id,
-    },
-  });
+  if (recurrence === "FIXED") {
+    const months = parseRecurrenceCount(formData.get("months"));
+    const recurrenceGroupId = randomUUID();
+
+    await prisma.transaction.createMany({
+      data: Array.from({ length: months }, (_, i) => ({
+        ...fields,
+        date: addMonthsClamped(fields.date, i),
+        householdId: user.householdId,
+        userId: user.id,
+        isFixed: true,
+        recurrenceGroupId,
+      })),
+    });
+  } else if (recurrence === "INSTALLMENT") {
+    const installmentTotal = parseRecurrenceCount(formData.get("installments"));
+    const recurrenceGroupId = randomUUID();
+    const amounts = splitAmount(fields.amount, installmentTotal);
+
+    await prisma.transaction.createMany({
+      data: amounts.map((amount, i) => ({
+        ...fields,
+        amount,
+        date: addMonthsClamped(fields.date, i),
+        householdId: user.householdId,
+        userId: user.id,
+        installmentNumber: i + 1,
+        installmentTotal,
+        recurrenceGroupId,
+      })),
+    });
+  } else {
+    await prisma.transaction.create({
+      data: {
+        ...fields,
+        householdId: user.householdId,
+        userId: user.id,
+      },
+    });
+  }
+
   revalidatePath("/transacoes");
   revalidatePath("/");
 }
