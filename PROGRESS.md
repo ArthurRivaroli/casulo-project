@@ -196,5 +196,16 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - **Nota importante**: sem service worker, o Chrome/Android pode não disparar o banner *automático* de instalação (o "mini-infobar"), mas "Adicionar à tela de início" continua disponível manualmente pelo menu do navegador em qualquer plataforma — isso já é suficiente pro objetivo de "instalar como app"
 - Validado com `tsc --noEmit`, `eslint` e `next build` — os ícones/manifest são estáticos e não dependem do banco, então essa parte já foi validada de verdade (não só compilada)
 
+### Ajustes de layout mobile (primeiro teste real no celular)
+- Usuário testou local pelo celular e mandou print: header quebrando/embolando (logo + 6 links de nav + nome/sair tudo espremido numa linha) e o gráfico "Evolução do saldo" aparecendo cortado com o indicador de erro do Next por cima
+- **Erro investigado**: o "1 issue" era um aviso de hidratação (`bis_skin_checked` no diff) — assinatura clássica de extensão de segurança/antivírus no navegador do celular injetando atributo no DOM depois do HTML do servidor. **Não é bug do Casulo**; confirmável testando em aba anônima (que desativa extensões). Nenhuma mudança de código necessária aqui
+- **Header corrigido**: dividido em duas linhas — logo + usuário/sair no topo, navegação numa faixa própria abaixo
+- **Menu mobile com gaveta lateral** (pedido explícito do usuário em vez de só scroll horizontal):
+  - [src/lib/navLinks.ts](src/lib/navLinks.ts): lista de links do nav extraída pra um lugar só, usada tanto pelo nav horizontal (desktop) quanto pela gaveta (mobile)
+  - [src/components/MobileNav.tsx](src/components/MobileNav.tsx): botão hambúrguer que abre uma gaveta lateral (fundo com overlay escuro, fecha no X, no clique fora ou em Esc) com os links empilhados, nome do usuário e Sair — some ao clicar num link
+  - [src/components/NavLinks.tsx](src/components/NavLinks.tsx): sem mudança de comportamento, só passou a importar a lista compartilhada
+  - [src/app/(dashboard)/layout.tsx](<src/app/(dashboard)/layout.tsx>): `MobileNav` visível só abaixo do breakpoint `sm`, nav horizontal + nome/sair visíveis só a partir do `sm` (`hidden sm:flex` / `sm:hidden`)
+- Validado com `tsc --noEmit`, `eslint` e `next build` — layout/JS validado, mas o comportamento visual da gaveta em si ainda não foi visto num navegador de verdade (precisa de outro teste do usuário)
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

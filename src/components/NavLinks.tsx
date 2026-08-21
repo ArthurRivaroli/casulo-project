@@ -2,22 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const LINKS = [
-  { href: "/", label: "Resumo" },
-  { href: "/transacoes", label: "Transações" },
-  { href: "/contas", label: "Contas" },
-  { href: "/categorias", label: "Categorias" },
-  { href: "/orcamentos", label: "Orçamento" },
-  { href: "/metas", label: "Metas" },
-];
+import { NAV_LINKS } from "@/lib/navLinks";
 
 export function NavLinks() {
   const pathname = usePathname();
 
   return (
     <nav className="flex items-center gap-5 py-2.5">
-      {LINKS.map((link) => {
+      {NAV_LINKS.map((link) => {
         const isActive = pathname === link.href;
         return (
           <Link
