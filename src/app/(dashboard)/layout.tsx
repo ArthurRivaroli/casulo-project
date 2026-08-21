@@ -28,8 +28,8 @@ export default async function DashboardLayout({
           <div className="sm:hidden">
             <MobileNav userName={session.user.name} isAdmin={session.user.isAdmin} />
           </div>
-          <div className="hidden shrink-0 items-center gap-3 sm:flex">
-            <span className="text-sm font-medium text-indigo-100">
+          <div className="hidden min-w-0 items-center gap-3 sm:flex">
+            <span className="min-w-0 max-w-[10rem] truncate text-sm font-medium text-indigo-100">
               {session.user.name}
             </span>
             <SignOutButton />

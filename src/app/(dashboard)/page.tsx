@@ -134,9 +134,9 @@ export default async function DashboardPage() {
             {recentTransactions.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between px-4 py-3"
+                className="flex items-center justify-between gap-3 px-4 py-3"
               >
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-zinc-900 dark:text-zinc-50">
                       {t.description || t.category.name}
@@ -155,8 +155,8 @@ export default async function DashboardPage() {
                 <span
                   className={
                     t.type === "INCOME"
-                      ? "font-medium text-emerald-600"
-                      : "font-medium text-red-600"
+                      ? "shrink-0 font-medium text-emerald-600"
+                      : "shrink-0 font-medium text-red-600"
                   }
                 >
                   {t.type === "INCOME" ? "+" : "-"}

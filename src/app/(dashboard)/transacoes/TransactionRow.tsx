@@ -118,8 +118,8 @@ export function TransactionRow({
 
   return (
     <div className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="font-medium text-zinc-900 dark:text-zinc-50">
               {transaction.description || transaction.category.name}
@@ -135,7 +135,7 @@ export function TransactionRow({
             {formatDate(transaction.date)}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <span
             className={
               transaction.type === "INCOME"

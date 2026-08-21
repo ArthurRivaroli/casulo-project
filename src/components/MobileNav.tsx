@@ -102,9 +102,9 @@ export function MobileNav({
               })}
             </nav>
 
-            <div className="flex items-center justify-between border-t border-white/10 pt-3">
+            <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3">
               {userName && (
-                <span className="text-sm font-medium text-indigo-100">
+                <span className="min-w-0 truncate text-sm font-medium text-indigo-100">
                   {userName}
                 </span>
               )}

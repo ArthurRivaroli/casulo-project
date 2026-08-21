@@ -69,8 +69,8 @@ export function AccountRow({
 
   return (
     <div className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="font-medium text-zinc-900 dark:text-zinc-50">
             {account.name}
           </p>
@@ -78,7 +78,7 @@ export function AccountRow({
             {ACCOUNT_TYPE_LABELS[account.type]}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <span
             className={
               balance > 0

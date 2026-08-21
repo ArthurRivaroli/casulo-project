@@ -112,7 +112,7 @@ export function GoalRow({
         </form>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="font-medium text-zinc-900 dark:text-zinc-50">
               {goal.name}
             </p>
@@ -162,12 +162,12 @@ export function GoalRow({
           {sortedEntries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between py-2 text-sm"
+              className="flex items-center justify-between gap-3 py-2 text-sm"
             >
-              <span className="text-zinc-500 dark:text-zinc-400">
+              <span className="min-w-0 truncate text-zinc-500 dark:text-zinc-400">
                 {formatDate(entry.date)} · {entry.account.name}
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3">
                 <span
                   className={
                     entry.amount >= 0

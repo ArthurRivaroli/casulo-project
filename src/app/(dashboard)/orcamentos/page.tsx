@@ -44,7 +44,7 @@ export default async function OrcamentosPage({
   const monthStart = new Date(year, month - 1, 1);
   const monthEnd = new Date(year, month, 1);
 
-  const [categories, budgets, spentSums, previousBudgets] = await Promise.all([
+  const [categories, budgets, spentSums, incomeSum, previousBudgets] = await Promise.all([
     prisma.category.findMany({
       where: { householdId, type: "EXPENSE" },
       orderBy: { name: "asc" },
@@ -55,6 +55,14 @@ export default async function OrcamentosPage({
       where: {
         householdId,
         type: "EXPENSE",
+        date: { gte: monthStart, lt: monthEnd },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        householdId,
+        type: "INCOME",
         date: { gte: monthStart, lt: monthEnd },
       },
       _sum: { amount: true },
@@ -75,7 +83,9 @@ export default async function OrcamentosPage({
     (b) => !currentCategoryIds.has(b.categoryId),
   );
 
-  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  // "Orçamento total" é a receita lançada no mês — quanto entrou é o teto
+  // do que dá pra gastar, não a soma arbitrária dos orçamentos por categoria.
+  const totalBudget = incomeSum._sum.amount ?? 0;
   const totalSpent = spentSums.reduce((sum, s) => sum + (s._sum.amount ?? 0), 0);
   const totalPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : null;
 
@@ -174,7 +184,7 @@ export default async function OrcamentosPage({
           {overBudgetCategories.length > 0 && (
             <div className="mt-4 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
               <AlertTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>
+              <span className="min-w-0">
                 Estourou o orçamento em: {overBudgetCategories.map((c) => c.name).join(", ")}.
               </span>
             </div>
@@ -205,12 +215,12 @@ export default async function OrcamentosPage({
                 className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
                     <span
-                      className="h-3 w-3 shrink-0 rounded-full"
+                      className="mt-1.5 h-3 w-3 shrink-0 rounded-full"
                       style={{ backgroundColor: category.color ?? "#6366f1" }}
                     />
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium text-zinc-900 dark:text-zinc-50">
                         {category.name}
                       </p>
@@ -226,7 +236,7 @@ export default async function OrcamentosPage({
                       </p>
                     </div>
                   </div>
-                  <form action={setBudgetForCategory} className="flex items-center gap-2">
+                  <form action={setBudgetForCategory} className="flex shrink-0 items-center gap-2">
                     <input
                       name="amount"
                       type="number"
@@ -234,7 +244,7 @@ export default async function OrcamentosPage({
                       min="0"
                       placeholder="Sem orçamento"
                       defaultValue={budgetAmount ?? ""}
-                      className="w-32 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                      className="w-36 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                     />
                     <button
                       type="submit"

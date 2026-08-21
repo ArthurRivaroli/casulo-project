@@ -73,13 +73,13 @@ export function CategoryRow({
 
   return (
     <div className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <span
-            className="h-3 w-3 shrink-0 rounded-full"
+            className="mt-1.5 h-3 w-3 shrink-0 rounded-full"
             style={{ backgroundColor: category.color ?? DEFAULT_COLOR }}
           />
-          <div>
+          <div className="min-w-0">
             <p className="font-medium text-zinc-900 dark:text-zinc-50">
               {category.name}
             </p>
@@ -88,7 +88,7 @@ export function CategoryRow({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <button
             type="button"
             onClick={() => setEditing(true)}

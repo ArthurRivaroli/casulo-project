@@ -83,19 +83,21 @@ export function UserRow({
 
   return (
     <div className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-zinc-900 dark:text-zinc-50">{user.name}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="min-w-0 truncate font-medium text-zinc-900 dark:text-zinc-50">
+              {user.name}
+            </p>
             {user.isAdmin && (
-              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+              <span className="shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                 Admin
               </span>
             )}
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{user.email}</p>
+          <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">{user.email}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4">
           <button
             type="button"
             onClick={() => setEditing(true)}
