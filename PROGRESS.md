@@ -255,5 +255,11 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - **Layout mobile do formulário de transações**: trocado `flex flex-wrap` por `grid grid-cols-2 gap-3 sm:flex sm:flex-wrap` no formulário de criação (`/transacoes`) e na edição inline (`TransactionRow.tsx`), pra os campos pareggarem em 2 colunas de forma previsível no celular em vez do wrap desigual de antes. Campo "Descrição" ocupa a linha inteira (`col-span-2`) por ser texto livre; valor/meses/parcelas usam `w-full` no mobile e voltam pra largura fixa (`sm:w-28`/`sm:w-24`) no desktop
 - Validado com `tsc --noEmit`, `eslint` e `next build` — o visual em si (grade mobile, ícones no contexto real da página) ainda não foi visto no navegador de verdade
 
+### Deploy na Vercel — corrigido `Module not found: Can't resolve '@/generated/prisma/client'`
+- Primeiro deploy na Vercel quebrou com esse erro mesmo com o `"postinstall": "prisma generate"` já no `package.json` — o passo de instalação da Vercel não gerou o client antes do `next build` rodar (motivo exato incerto: cache de instalação, pulo de scripts, etc.)
+- Corrigido de forma mais robusta, colocando o `prisma generate` **dentro do próprio comando de build**, não só no `postinstall`: `"build": "prisma generate && next build"` em [package.json](package.json) — assim o client é gerado logo antes do build rodar, não importa o que aconteça no passo de instalação. Mantido o `postinstall` também (ajuda no dia a dia local depois de um `npm install`)
+- Testado simulando o cenário exato da Vercel: apaguei `src/generated` e rodei só `npm run build` (mesmo comando que a Vercel executa) — funcionou de ponta a ponta
+- Repositório na Vercel deve apontar pra branch `master-qe8ke3` (onde está todo o trabalho); a PR pra `master` ainda não foi mesclada
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém
