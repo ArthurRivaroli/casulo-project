@@ -238,5 +238,16 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - [src/lib/dateInput.ts](src/lib/dateInput.ts): `toDateInputValue` extraído (estava duplicado em `TransactionRow.tsx`, agora também usado em `GoalRow.tsx`/`metas/page.tsx`)
 - Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** (precisa das duas migrações aplicadas primeiro)
 
+### Excluir uma ocorrência ou a série inteira (fixa/parcelada)
+- Em `/transacoes`, uma transação que faz parte de uma série (tem `recurrenceGroupId`, ou seja, veio de uma despesa fixa ou compra parcelada) agora mostra dois botões: **"Excluir esta"** (só aquela ocorrência, comportamento de sempre) e **"Excluir série"** (todas as transações daquele `recurrenceGroupId`). Transação avulsa continua só com "Excluir"
+- [src/app/(dashboard)/transacoes/actions.ts](<src/app/(dashboard)/transacoes/actions.ts>): `deleteTransactionSeries` — mesmo padrão de erro amigável via `useActionState` das outras exclusões; também bloqueia se alguma transação da série estiver ligada a uma meta (mesma checagem do `deleteTransaction` individual)
+- Deletar uma ocorrência não renumera as outras (ex: excluir a parcela 3/12 não vira as demais em "3/11") — é histórico, fica como estava
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+
+### Diagnóstico de sessão: Prisma Client desatualizado no Windows (não era bug do Casulo)
+- Depois de puxar as mudanças de schema (Metas), o usuário via `PrismaClientValidationError: Unknown field 'entries'` mesmo com a migração aplicada (`prisma migrate status` confirmou banco em dia)
+- Causa: o `npx prisma generate` regenera os arquivos em `src/generated/prisma`, mas o processo do `npm run dev` já estava rodando com o client antigo carregado em memória — regenerar os arquivos no disco não atualiza um processo já em execução. Resolvido parando o `npm run dev` (Ctrl+C, esperar o prompt voltar) e rodando de novo do zero
+- Nota registrada aqui pra não repetir o mesmo ciclo de diagnóstico numa próxima mudança de schema: depois de qualquer migração, sempre **parar e reiniciar o `npm run dev`**, não só rodar `prisma generate` com o servidor ainda de pé
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

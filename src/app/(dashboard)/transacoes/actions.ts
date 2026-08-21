@@ -178,3 +178,32 @@ export async function deleteTransaction(
   revalidatePath("/");
   return { error: null };
 }
+
+export async function deleteTransactionSeries(
+  recurrenceGroupId: string | null,
+  _prevState: DeleteTransactionState,
+  _formData: FormData,
+): Promise<DeleteTransactionState> {
+  const user = await requireSession();
+  if (!recurrenceGroupId) return { error: null };
+
+  const linkedGoalEntry = await prisma.goalEntry.findFirst({
+    where: {
+      householdId: user.householdId,
+      transaction: { recurrenceGroupId },
+    },
+    include: { goal: true },
+  });
+  if (linkedGoalEntry) {
+    return {
+      error: `Não é possível excluir a série: uma das transações está ligada à meta "${linkedGoalEntry.goal.name}".`,
+    };
+  }
+
+  await prisma.transaction.deleteMany({
+    where: { recurrenceGroupId, householdId: user.householdId },
+  });
+  revalidatePath("/transacoes");
+  revalidatePath("/");
+  return { error: null };
+}

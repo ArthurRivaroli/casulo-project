@@ -7,6 +7,7 @@ import { toDateInputValue } from "@/lib/dateInput";
 import { RecurrenceBadge } from "@/components/RecurrenceBadge";
 import {
   deleteTransaction,
+  deleteTransactionSeries,
   updateTransaction,
   type DeleteTransactionState,
 } from "./actions";
@@ -35,6 +36,7 @@ export function TransactionRow({
     isFixed: boolean;
     installmentNumber: number | null;
     installmentTotal: number | null;
+    recurrenceGroupId: string | null;
   };
   accounts: AccountOption[];
   categories: CategoryOption[];
@@ -44,6 +46,14 @@ export function TransactionRow({
   const deleteTransactionWithId = deleteTransaction.bind(null, transaction.id);
   const [deleteState, deleteAction, deletePending] = useActionState(
     deleteTransactionWithId,
+    initialDeleteState,
+  );
+  const deleteSeriesWithGroupId = deleteTransactionSeries.bind(
+    null,
+    transaction.recurrenceGroupId,
+  );
+  const [deleteSeriesState, deleteSeriesAction, deleteSeriesPending] = useActionState(
+    deleteSeriesWithGroupId,
     initialDeleteState,
   );
 
@@ -133,13 +143,35 @@ export function TransactionRow({
               }}
               className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
             >
-              Excluir
+              {transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
             </button>
           </form>
+          {transaction.recurrenceGroupId && (
+            <form action={deleteSeriesAction}>
+              <button
+                type="submit"
+                disabled={deleteSeriesPending}
+                onClick={(e) => {
+                  if (
+                    !confirm(
+                      "Excluir TODA a série (todas as ocorrências desta despesa fixa/parcela)?",
+                    )
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+              >
+                Excluir série
+              </button>
+            </form>
+          )}
         </div>
       </div>
-      {deleteState.error && (
-        <p className="text-sm text-red-600">{deleteState.error}</p>
+      {(deleteState.error || deleteSeriesState.error) && (
+        <p className="text-sm text-red-600">
+          {deleteState.error || deleteSeriesState.error}
+        </p>
       )}
     </div>
   );
