@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { shiftMonth } from "@/lib/monthNav";
 
 const MAX_AMOUNT = 1_000_000_000;
 
@@ -45,6 +46,40 @@ export async function setBudget(
       },
       create: { householdId, categoryId, month, year, amount },
       update: { amount },
+    });
+  }
+
+  revalidatePath("/orcamentos");
+}
+
+// Fills in only the categories that don't already have a budget for
+// (month, year) — never overwrites a value the user already set there.
+export async function copyPreviousMonthBudgets(month: number, year: number) {
+  const householdId = await requireHouseholdId();
+  const previous = shiftMonth(month, year, -1);
+
+  const [previousBudgets, currentBudgets] = await Promise.all([
+    prisma.budget.findMany({
+      where: { householdId, month: previous.month, year: previous.year },
+    }),
+    prisma.budget.findMany({
+      where: { householdId, month, year },
+      select: { categoryId: true },
+    }),
+  ]);
+
+  const alreadySet = new Set(currentBudgets.map((b) => b.categoryId));
+  const toCopy = previousBudgets.filter((b) => !alreadySet.has(b.categoryId));
+
+  if (toCopy.length > 0) {
+    await prisma.budget.createMany({
+      data: toCopy.map((b) => ({
+        householdId,
+        categoryId: b.categoryId,
+        month,
+        year,
+        amount: b.amount,
+      })),
     });
   }
 
