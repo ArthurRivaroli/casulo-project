@@ -260,6 +260,8 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - Corrigido de forma mais robusta, colocando o `prisma generate` **dentro do próprio comando de build**, não só no `postinstall`: `"build": "prisma generate && next build"` em [package.json](package.json) — assim o client é gerado logo antes do build rodar, não importa o que aconteça no passo de instalação. Mantido o `postinstall` também (ajuda no dia a dia local depois de um `npm install`)
 - Testado simulando o cenário exato da Vercel: apaguei `src/generated` e rodei só `npm run build` (mesmo comando que a Vercel executa) — funcionou de ponta a ponta
 - Repositório na Vercel deve apontar pra branch `master-qe8ke3` (onde está todo o trabalho); a PR pra `master` ainda não foi mesclada
+- Env vars (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`) precisaram ser adicionadas manualmente no painel da Vercel (projeto começou sem nenhuma) — sem elas o NextAuth quebra com `[next-auth][error][NO_SECRET]` e a tela `/api/auth/error?error=Configuration`. Confirmar que cada uma está marcada pros três ambientes (Production/Preview/Development), não só Production
+- Confirmado pelo status da PR no GitHub que o deployment do commit desta correção (`31386bf`) sempre built com sucesso — erros de "module not found" reaparecendo depois disso eram o usuário reabrindo/reimplantando uma entrada antiga na lista de Deployments da Vercel, não uma regressão real
 
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém
