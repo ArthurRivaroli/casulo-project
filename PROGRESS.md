@@ -138,6 +138,15 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [eslint.config.mjs](eslint.config.mjs): adicionado `argsIgnorePattern: "^_"` em `no-unused-vars`, já que a assinatura exigida por `useActionState` (`(id, prevState, formData)`) deixa `prevState`/`formData` sem uso nessas actions
 - Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente
 
+### Gráficos com Recharts
+- Segui a skill de dataviz do projeto antes de escrever qualquer gráfico (forma → cor → validar → marcas → interação → acessibilidade), em vez de sair colocando cor/tipo de gráfico "no olho"
+- **Gastos por categoria** ([ExpenseByCategoryChart.tsx](<src/app/(dashboard)/ExpenseByCategoryChart.tsx>)): barra horizontal, uma por categoria de despesa do mês, ordenada por valor — usa a cor que a própria categoria já tem no schema (`Category.color`), a mesma bolinha usada em `/categorias` e `/orcamentos`, em vez de inventar uma paleta nova; nome da categoria fica no eixo Y (identidade nunca só por cor)
+- **Evolução do saldo** ([MonthlyBalanceChart.tsx](<src/app/(dashboard)/MonthlyBalanceChart.tsx>)): barras divergentes dos últimos 6 meses (receitas − despesas), verde/vermelho a partir de uma linha de referência em zero — as mesmas cores (`#059669`/`#dc2626`) já usadas no resto do app pra receita/despesa
+- Rodei o validador de paleta da skill (`scripts/validate_palette.js`) no par verde/vermelho antes de usar — passou em todos os checks (contraste, daltonismo, etc.), e o gráfico ainda tem a posição acima/abaixo da linha de zero como reforço não-dependente de cor
+- [ChartTooltip.tsx](<src/app/(dashboard)/ChartTooltip.tsx>): tooltip customizado compartilhado pelos dois gráficos, estilizado com os tokens do app (não o tooltip branco padrão do Recharts, que destoava no dark mode)
+- Ambos os gráficos calculados a partir das transações que a dashboard já buscava — nenhuma query nova no banco
+- Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** por falta de `DATABASE_URL` neste ambiente (o `next build` valida o bundle/tipos, mas não renderiza o SVG de verdade com dados reais)
+
 ## Próximos passos
 
 ### Autenticação / onboarding
@@ -161,10 +170,10 @@ App de gestão financeira familiar/doméstica ("household") em Next.js.
 - [x] Tela de listagem/formulário para transações (`/transacoes`)
 - [x] Tela de orçamento por categoria com navegação por mês (`/orcamentos`)
 - [x] Tela de listagem/formulário para metas (`/metas`)
-- [ ] Trocar cálculo de saldo/gráficos para usar Recharts (por enquanto são só números)
+- [x] Gráficos com Recharts na dashboard (gasto por categoria, evolução do saldo)
 - [ ] Validar dashboard, `/contas`, `/categorias`, `/transacoes`, `/orcamentos` e `/metas` no navegador contra dados reais do Neon — inclui testar login de novo, já que `auth.ts` mudou (sessão agora carrega `user.id`)
 
-Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `Budget`, `Goal`) têm CRUD via Server Actions. O que falta é validação real no navegador e os dois itens de polimento acima.
+Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `Budget`, `Goal`) têm CRUD via Server Actions, e a dashboard já tem gráficos. O que falta é validação real no navegador.
 
 ### Outros
 - [ ] Trocar a senha do usuário do banco no Neon (a connection string atual foi compartilhada em texto puro durante a configuração)

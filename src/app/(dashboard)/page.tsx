@@ -3,6 +3,11 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { ExpenseByCategoryChart } from "./ExpenseByCategoryChart";
+import { MonthlyBalanceChart } from "./MonthlyBalanceChart";
+
+const DEFAULT_CATEGORY_COLOR = "#6366f1";
+const MONTHS_IN_TREND = 6;
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -40,6 +45,47 @@ export default async function DashboardPage() {
 
   const recentTransactions = transactions.slice(0, 5);
 
+  const expenseByCategory = new Map<
+    string,
+    { name: string; color: string; value: number }
+  >();
+  for (const t of monthTransactions) {
+    if (t.type !== "EXPENSE") continue;
+    const existing = expenseByCategory.get(t.categoryId);
+    if (existing) {
+      existing.value += t.amount;
+    } else {
+      expenseByCategory.set(t.categoryId, {
+        name: t.category.name,
+        color: t.category.color ?? DEFAULT_CATEGORY_COLOR,
+        value: t.amount,
+      });
+    }
+  }
+  const expenseChartData = Array.from(expenseByCategory.values()).sort(
+    (a, b) => b.value - a.value,
+  );
+
+  const monthlyBalanceData = Array.from({ length: MONTHS_IN_TREND }, (_, i) => {
+    const monthDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - (MONTHS_IN_TREND - 1 - i),
+      1,
+    );
+    const net = transactions
+      .filter(
+        (t) =>
+          t.date.getFullYear() === monthDate.getFullYear() &&
+          t.date.getMonth() === monthDate.getMonth(),
+      )
+      .reduce((sum, t) => sum + (t.type === "INCOME" ? t.amount : -t.amount), 0);
+
+    return {
+      label: monthDate.toLocaleDateString("pt-PT", { month: "short" }),
+      net,
+    };
+  });
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -55,6 +101,21 @@ export default async function DashboardPage() {
         <SummaryCard label="Saldo total" value={balance} tone="neutral" />
         <SummaryCard label="Receitas do mês" value={income} tone="positive" />
         <SummaryCard label="Despesas do mês" value={expense} tone="negative" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+            Gastos por categoria
+          </h2>
+          <ExpenseByCategoryChart data={expenseChartData} />
+        </div>
+        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-3 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+            Evolução do saldo
+          </h2>
+          <MonthlyBalanceChart data={monthlyBalanceData} />
+        </div>
       </div>
 
       <section>
