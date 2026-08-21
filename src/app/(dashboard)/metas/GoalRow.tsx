@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { toDateInputValue } from "@/lib/dateInput";
+import { formatDate } from "@/lib/formatDate";
+import { EditIcon, TrashIcon } from "@/components/icons";
 import {
   addGoalEntry,
   deleteGoal,
@@ -116,16 +118,18 @@ export function GoalRow({
             </p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               {formatCurrency(currentAmount)} de {formatCurrency(goal.targetAmount)}
-              {goal.deadline && ` · até ${goal.deadline.toLocaleDateString("pt-PT")}`}
+              {goal.deadline && ` · até ${formatDate(goal.deadline)}`}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              aria-label="Editar"
+              title="Editar"
+              className="text-indigo-600 hover:text-indigo-500"
             >
-              Editar
+              <EditIcon className="h-4 w-4" />
             </button>
             <form action={deleteGoalWithId}>
               <button
@@ -135,9 +139,11 @@ export function GoalRow({
                     e.preventDefault();
                   }
                 }}
-                className="text-sm font-medium text-red-600 hover:text-red-500"
+                aria-label="Excluir"
+                title="Excluir"
+                className="text-red-600 hover:text-red-500"
               >
-                Excluir
+                <TrashIcon className="h-4 w-4" />
               </button>
             </form>
           </div>
@@ -159,7 +165,7 @@ export function GoalRow({
               className="flex items-center justify-between py-2 text-sm"
             >
               <span className="text-zinc-500 dark:text-zinc-400">
-                {entry.date.toLocaleDateString("pt-PT")} · {entry.account.name}
+                {formatDate(entry.date)} · {entry.account.name}
               </span>
               <div className="flex items-center gap-3">
                 <span
@@ -180,9 +186,11 @@ export function GoalRow({
                         e.preventDefault();
                       }
                     }}
-                    className="font-medium text-red-600 hover:text-red-500"
+                    aria-label="Excluir lançamento"
+                    title="Excluir lançamento"
+                    className="text-red-600 hover:text-red-500"
                   >
-                    Excluir
+                    <TrashIcon className="h-4 w-4" />
                   </button>
                 </form>
               </div>

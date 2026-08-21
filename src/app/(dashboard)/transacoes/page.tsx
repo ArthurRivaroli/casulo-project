@@ -42,7 +42,7 @@ export default async function TransacoesPage() {
       {canCreate ? (
         <form
           action={createTransaction}
-          className="flex flex-wrap items-end gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+          className="grid grid-cols-2 gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:flex sm:flex-wrap sm:items-end dark:border-zinc-800 dark:bg-zinc-900"
         >
           <TransactionFields
             accounts={accounts}
@@ -51,7 +51,7 @@ export default async function TransacoesPage() {
           />
           <button
             type="submit"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+            className="col-span-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 sm:col-auto"
           >
             Adicionar
           </button>

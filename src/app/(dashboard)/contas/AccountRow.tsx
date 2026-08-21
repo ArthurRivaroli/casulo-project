@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import type { AccountType } from "@/generated/prisma/client";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { EditIcon, TrashIcon } from "@/components/icons";
 import { deleteAccount, updateAccount, type DeleteAccountState } from "./actions";
 
 const initialDeleteState: DeleteAccountState = { error: null };
@@ -92,9 +93,11 @@ export function AccountRow({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            aria-label="Editar"
+            title="Editar"
+            className="text-indigo-600 hover:text-indigo-500"
           >
-            Editar
+            <EditIcon className="h-4 w-4" />
           </button>
           <form action={deleteAction}>
             <button
@@ -105,9 +108,11 @@ export function AccountRow({
                   e.preventDefault();
                 }
               }}
-              className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+              aria-label="Excluir"
+              title="Excluir"
+              className="text-red-600 hover:text-red-500 disabled:opacity-50"
             >
-              Excluir
+              <TrashIcon className="h-4 w-4" />
             </button>
           </form>
         </div>

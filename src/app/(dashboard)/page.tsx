@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/accountTypes";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { formatDate } from "@/lib/formatDate";
 import { RecurrenceBadge } from "@/components/RecurrenceBadge";
 import { ExpenseByCategoryChart } from "./ExpenseByCategoryChart";
 import { MonthlyBalanceChart } from "./MonthlyBalanceChart";
@@ -148,7 +149,7 @@ export default async function DashboardPage() {
                   </div>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     {t.category.name} · {t.account.name} ·{" "}
-                    {t.date.toLocaleDateString("pt-BR")}
+                    {formatDate(t.date)}
                   </p>
                 </div>
                 <span

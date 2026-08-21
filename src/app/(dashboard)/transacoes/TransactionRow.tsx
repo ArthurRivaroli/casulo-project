@@ -4,7 +4,9 @@ import { useActionState, useState } from "react";
 import type { EntryType } from "@/generated/prisma/client";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { toDateInputValue } from "@/lib/dateInput";
+import { formatDate } from "@/lib/formatDate";
 import { RecurrenceBadge } from "@/components/RecurrenceBadge";
+import { EditIcon, TrashIcon } from "@/components/icons";
 import {
   deleteTransaction,
   deleteTransactionSeries,
@@ -64,7 +66,7 @@ export function TransactionRow({
           await updateTransactionWithId(formData);
           setEditing(false);
         }}
-        className="flex flex-wrap items-end gap-3 px-4 py-3"
+        className="grid grid-cols-2 gap-3 px-4 py-3 sm:flex sm:flex-wrap sm:items-end"
       >
         <TransactionFields
           accounts={accounts}
@@ -80,14 +82,14 @@ export function TransactionRow({
         />
         <button
           type="submit"
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          className="col-span-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:col-auto"
         >
           Salvar
         </button>
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="col-span-2 text-sm text-zinc-500 hover:text-zinc-700 sm:col-auto dark:text-zinc-400 dark:hover:text-zinc-200"
         >
           Cancelar
         </button>
@@ -111,7 +113,7 @@ export function TransactionRow({
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {transaction.category.name} · {transaction.account.name} ·{" "}
-            {transaction.date.toLocaleDateString("pt-BR")}
+            {formatDate(transaction.date)}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -128,9 +130,11 @@ export function TransactionRow({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            aria-label="Editar"
+            title="Editar"
+            className="text-indigo-600 hover:text-indigo-500"
           >
-            Editar
+            <EditIcon className="h-4 w-4" />
           </button>
           <form action={deleteAction}>
             <button
@@ -141,9 +145,11 @@ export function TransactionRow({
                   e.preventDefault();
                 }
               }}
-              className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+              aria-label={transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
+              title={transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
+              className="text-red-600 hover:text-red-500 disabled:opacity-50"
             >
-              {transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
+              <TrashIcon className="h-4 w-4" />
             </button>
           </form>
           {transaction.recurrenceGroupId && (
@@ -160,9 +166,11 @@ export function TransactionRow({
                     e.preventDefault();
                   }
                 }}
-                className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+                title="Excluir série"
+                className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
               >
-                Excluir série
+                <TrashIcon className="h-4 w-4" />
+                série
               </button>
             </form>
           )}

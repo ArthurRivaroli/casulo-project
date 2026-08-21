@@ -63,7 +63,7 @@ export function TransactionFields({
           min="0.01"
           required
           defaultValue={defaultValues?.amount}
-          className={`${inputClass} w-28`}
+          className={`${inputClass} sm:w-28`}
         />
       </div>
       <div>
@@ -115,7 +115,7 @@ export function TransactionFields({
           ))}
         </select>
       </div>
-      <div className="min-w-[160px] flex-1">
+      <div className="col-span-2 sm:min-w-[160px] sm:flex-1">
         <label htmlFor="description" className={labelClass}>
           Descrição
         </label>
@@ -159,7 +159,7 @@ export function TransactionFields({
                 max="60"
                 required
                 defaultValue={12}
-                className={`${inputClass} w-24`}
+                className={`${inputClass} sm:w-24`}
               />
             </div>
           )}
@@ -176,7 +176,7 @@ export function TransactionFields({
                 max="60"
                 required
                 defaultValue={12}
-                className={`${inputClass} w-24`}
+                className={`${inputClass} sm:w-24`}
               />
             </div>
           )}
