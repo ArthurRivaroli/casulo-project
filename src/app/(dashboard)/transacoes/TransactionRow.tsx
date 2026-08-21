@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import type { EntryType } from "@/generated/prisma/client";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { toDateInputValue } from "@/lib/dateInput";
@@ -11,11 +11,8 @@ import {
   deleteTransaction,
   deleteTransactionSeries,
   updateTransaction,
-  type DeleteTransactionState,
 } from "./actions";
 import { TransactionFields } from "./TransactionFields";
-
-const initialDeleteState: DeleteTransactionState = { error: null };
 
 type AccountOption = { id: string; name: string };
 type CategoryOption = { id: string; name: string; type: EntryType };
@@ -45,19 +42,41 @@ export function TransactionRow({
 }) {
   const [editing, setEditing] = useState(false);
   const updateTransactionWithId = updateTransaction.bind(null, transaction.id);
-  const deleteTransactionWithId = deleteTransaction.bind(null, transaction.id);
-  const [deleteState, deleteAction, deletePending] = useActionState(
-    deleteTransactionWithId,
-    initialDeleteState,
-  );
-  const deleteSeriesWithGroupId = deleteTransactionSeries.bind(
-    null,
-    transaction.recurrenceGroupId,
-  );
-  const [deleteSeriesState, deleteSeriesAction, deleteSeriesPending] = useActionState(
-    deleteSeriesWithGroupId,
-    initialDeleteState,
-  );
+  const [isDeleting, startDelete] = useTransition();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleDelete() {
+    if (transaction.recurrenceGroupId) {
+      const wantsWholeSeries = confirm(
+        "Esta transação faz parte de uma série (fixa ou parcelada).\n\n" +
+          "OK = excluir a SÉRIE INTEIRA (todas as ocorrências)\n" +
+          "Cancelar = excluir só esta ocorrência (você confirma em seguida)",
+      );
+      if (wantsWholeSeries) {
+        startDelete(async () => {
+          const result = await deleteTransactionSeries(
+            transaction.recurrenceGroupId,
+            { error: null },
+            new FormData(),
+          );
+          setDeleteError(result.error);
+        });
+        return;
+      }
+      if (!confirm("Excluir apenas esta ocorrência?")) return;
+    } else if (!confirm("Excluir esta transação?")) {
+      return;
+    }
+
+    startDelete(async () => {
+      const result = await deleteTransaction(
+        transaction.id,
+        { error: null },
+        new FormData(),
+      );
+      setDeleteError(result.error);
+    });
+  }
 
   if (editing) {
     return (
@@ -136,51 +155,19 @@ export function TransactionRow({
           >
             <EditIcon className="h-4 w-4" />
           </button>
-          <form action={deleteAction}>
-            <button
-              type="submit"
-              disabled={deletePending}
-              onClick={(e) => {
-                if (!confirm("Excluir esta transação?")) {
-                  e.preventDefault();
-                }
-              }}
-              aria-label={transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
-              title={transaction.recurrenceGroupId ? "Excluir esta" : "Excluir"}
-              className="text-red-600 hover:text-red-500 disabled:opacity-50"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </form>
-          {transaction.recurrenceGroupId && (
-            <form action={deleteSeriesAction}>
-              <button
-                type="submit"
-                disabled={deleteSeriesPending}
-                onClick={(e) => {
-                  if (
-                    !confirm(
-                      "Excluir TODA a série (todas as ocorrências desta despesa fixa/parcela)?",
-                    )
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
-                title="Excluir série"
-                className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
-              >
-                <TrashIcon className="h-4 w-4" />
-                série
-              </button>
-            </form>
-          )}
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            aria-label="Excluir"
+            title="Excluir"
+            className="text-red-600 hover:text-red-500 disabled:opacity-50"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
         </div>
       </div>
-      {(deleteState.error || deleteSeriesState.error) && (
-        <p className="text-sm text-red-600">
-          {deleteState.error || deleteSeriesState.error}
-        </p>
-      )}
+      {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
     </div>
   );
 }

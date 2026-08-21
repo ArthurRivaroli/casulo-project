@@ -7,9 +7,16 @@ import { NAV_LINKS } from "@/lib/navLinks";
 import { Logo } from "@/components/Logo";
 import { SignOutButton } from "@/components/SignOutButton";
 
-export function MobileNav({ userName }: { userName?: string | null }) {
+export function MobileNav({
+  userName,
+  isAdmin,
+}: {
+  userName?: string | null;
+  isAdmin: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const links = NAV_LINKS.filter((link) => !link.adminOnly || isAdmin);
 
   useEffect(() => {
     if (!open) return;
@@ -76,7 +83,7 @@ export function MobileNav({ userName }: { userName?: string | null }) {
             </div>
 
             <nav className="mt-6 flex flex-1 flex-col gap-1">
-              {NAV_LINKS.map((link) => {
+              {links.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link

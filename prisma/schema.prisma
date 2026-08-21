@@ -39,6 +39,7 @@ model User {
   name         String
   email        String        @unique
   password     String
+  isAdmin      Boolean       @default(false)
   household    Household     @relation(fields: [householdId], references: [id])
   householdId  String
   transactions Transaction[]

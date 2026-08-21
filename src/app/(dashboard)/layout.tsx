@@ -26,7 +26,7 @@ export default async function DashboardLayout({
             <Logo className="h-8 w-auto" />
           </Link>
           <div className="sm:hidden">
-            <MobileNav userName={session.user.name} />
+            <MobileNav userName={session.user.name} isAdmin={session.user.isAdmin} />
           </div>
           <div className="hidden shrink-0 items-center gap-3 sm:flex">
             <span className="text-sm font-medium text-indigo-100">
@@ -37,7 +37,7 @@ export default async function DashboardLayout({
         </div>
         <div className="hidden border-t border-white/10 sm:block">
           <div className="mx-auto w-full max-w-5xl overflow-x-auto px-4 sm:px-6">
-            <NavLinks />
+            <NavLinks isAdmin={session.user.isAdmin} />
           </div>
         </div>
       </header>

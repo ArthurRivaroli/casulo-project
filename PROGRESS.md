@@ -263,5 +263,22 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - Env vars (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`) precisaram ser adicionadas manualmente no painel da Vercel (projeto começou sem nenhuma) — sem elas o NextAuth quebra com `[next-auth][error][NO_SECRET]` e a tela `/api/auth/error?error=Configuration`. Confirmar que cada uma está marcada pros três ambientes (Production/Preview/Development), não só Production
 - Confirmado pelo status da PR no GitHub que o deployment do commit desta correção (`31386bf`) sempre built com sucesso — erros de "module not found" reaparecendo depois disso eram o usuário reabrindo/reimplantando uma entrada antiga na lista de Deployments da Vercel, não uma regressão real
 
+### Botão único de excluir transação (em vez de dois)
+- Ajuste pedido logo depois de eu ter implementado "Excluir esta" + "Excluir série" como dois botões separados — o usuário queria só **um** botão, que decide sozinho o que perguntar
+- [src/app/(dashboard)/transacoes/TransactionRow.tsx](<src/app/(dashboard)/transacoes/TransactionRow.tsx>): trocado os dois `<form>`/`useActionState` por um único botão com `useTransition`, chamando `deleteTransaction`/`deleteTransactionSeries` diretamente (as Server Actions continuam as mesmas, só a forma de invocar do cliente mudou). Se a transação é avulsa: um `confirm()` só. Se faz parte de série: primeiro `confirm()` pergunta "OK = série inteira, Cancelar = só esta ocorrência" e, se cancelar, um segundo `confirm()` pra essa opção — dá pra escolher entre 3 caminhos (série / só esta / nada) com dois diálogos nativos
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+
+### Gerenciamento de usuários (admin) — `isAdmin`
+- Pedido: criar/editar/excluir usuários da casa pelo app, em vez de direto no banco. Decidido com o usuário: só uma conta é "admin" (Arthur) e só ela pode gerenciar; quem cria já define a senha do novo usuário direto no formulário (sem envio de e-mail)
+- **Terceira mudança de schema**: `User` ganhou `isAdmin Boolean @default(false)`. Migração em [prisma/migrations/20260821140000_add_user_is_admin/migration.sql](<prisma/migrations/20260821140000_add_user_is_admin/migration.sql>) — além do `ADD COLUMN`, já inclui o `UPDATE` marcando `arthur.rivaroli21@gmail.com` como admin (confirmado com o usuário antes de escrever)
+- **⚠️ Requer migração**: rodar `npx prisma migrate deploy` de novo (e lembrar de reiniciar o `npm run dev` depois do `prisma generate`, como já documentado acima)
+- `isAdmin` propagado pra sessão do NextAuth: [src/lib/auth.ts](src/lib/auth.ts) (`authorize`, `jwt`, `session`) e [src/types/next-auth.d.ts](src/types/next-auth.d.ts) — mesmo padrão já usado pra `householdId`/`id`
+- [src/app/(dashboard)/usuarios/actions.ts](<src/app/(dashboard)/usuarios/actions.ts>): `createUser`/`updateUser` (throw em erro, mesmo padrão de Conta/Categoria/Meta) e `deleteUser` (via `useActionState`, mesmo padrão de exclusão de Conta/Categoria/Transação) — `deleteUser` bloqueia excluir a própria conta, excluir o único usuário da casa, e excluir alguém com transações lançadas (mesma checagem de FK já usada em outros lugares)
+- Cada Server Action reverifica `session.user.isAdmin` internamente (`requireAdmin()`) — não basta esconder o link do menu, já que Server Actions são endpoints alcançáveis diretamente
+- [src/app/(dashboard)/usuarios/page.tsx](<src/app/(dashboard)/usuarios/page.tsx>): redireciona pra `/` se quem acessa não for admin; formulário de criação (nome, email, senha) + listagem
+- [src/app/(dashboard)/usuarios/UserRow.tsx](<src/app/(dashboard)/usuarios/UserRow.tsx>): edição inline (nome, email, "nova senha" opcional — em branco mantém a atual) e exclusão; botão de excluir some na própria linha do usuário logado
+- Link "Usuários" no nav (desktop e gaveta mobile) só aparece pra admin — [src/lib/navLinks.ts](src/lib/navLinks.ts) ganhou uma flag `adminOnly`, [NavLinks.tsx](src/components/NavLinks.tsx)/[MobileNav.tsx](src/components/MobileNav.tsx) agora recebem `isAdmin` como prop e filtram a lista
+- Validado com `tsc --noEmit`, `eslint` e `next build`, incluindo o teste de simular o build da Vercel (apagar `src/generated` + `npm run build`) — **não testado no navegador**
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

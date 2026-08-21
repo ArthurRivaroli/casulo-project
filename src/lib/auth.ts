@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           householdId: user.householdId,
+          isAdmin: user.isAdmin,
         };
       },
     }),
@@ -41,12 +42,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.householdId = user.householdId;
+        token.isAdmin = user.isAdmin;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.sub!;
       session.user.householdId = token.householdId;
+      session.user.isAdmin = token.isAdmin;
       return session;
     },
   },

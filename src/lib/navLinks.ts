@@ -5,4 +5,5 @@ export const NAV_LINKS = [
   { href: "/categorias", label: "Categorias" },
   { href: "/orcamentos", label: "Orçamento" },
   { href: "/metas", label: "Metas" },
+  { href: "/usuarios", label: "Usuários", adminOnly: true },
 ];

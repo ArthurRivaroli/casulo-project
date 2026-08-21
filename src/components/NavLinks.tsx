@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "@/lib/navLinks";
 
-export function NavLinks() {
+export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
+  const links = NAV_LINKS.filter((link) => !link.adminOnly || isAdmin);
 
   return (
     <nav className="flex items-center gap-5 py-2.5">
-      {NAV_LINKS.map((link) => {
+      {links.map((link) => {
         const isActive = pathname === link.href;
         return (
           <Link

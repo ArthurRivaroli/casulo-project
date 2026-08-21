@@ -6,16 +6,19 @@ declare module "next-auth" {
     user: {
       id: string;
       householdId: string;
+      isAdmin: boolean;
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
     householdId: string;
+    isAdmin: boolean;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     householdId: string;
+    isAdmin: boolean;
   }
 }
