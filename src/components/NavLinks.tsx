@@ -16,7 +16,7 @@ export function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-4">
+    <nav className="flex items-center gap-5 py-2.5">
       {LINKS.map((link) => {
         const isActive = pathname === link.href;
         return (
@@ -25,8 +25,8 @@ export function NavLinks() {
             href={link.href}
             className={
               isActive
-                ? "text-sm font-bold text-white"
-                : "text-sm font-bold text-indigo-200/70 hover:text-indigo-100"
+                ? "shrink-0 whitespace-nowrap text-sm font-bold text-white"
+                : "shrink-0 whitespace-nowrap text-sm font-bold text-indigo-200/70 hover:text-indigo-100"
             }
           >
             {link.label}

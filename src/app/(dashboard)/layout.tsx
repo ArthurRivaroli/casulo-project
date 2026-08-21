@@ -19,16 +19,18 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-full flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
       <header className="bg-gradient-to-r from-indigo-950 via-violet-900 to-blue-950">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Logo className="h-9 w-auto" />
-          </div>
-          <NavLinks />
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-indigo-100">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <Logo className="h-8 w-auto shrink-0" />
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="hidden text-sm font-medium text-indigo-100 sm:inline">
               {session.user.name}
             </span>
             <SignOutButton />
+          </div>
+        </div>
+        <div className="border-t border-white/10">
+          <div className="mx-auto w-full max-w-5xl overflow-x-auto px-4 sm:px-6">
+            <NavLinks />
           </div>
         </div>
       </header>
