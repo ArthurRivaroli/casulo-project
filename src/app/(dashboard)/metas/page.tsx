@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { toDateInputValue } from "@/lib/dateInput";
 import { createGoal } from "./actions";
 import { GoalRow } from "./GoalRow";
 
@@ -8,10 +9,22 @@ export default async function MetasPage() {
   const session = await getServerSession(authOptions);
   const householdId = session!.user.householdId;
 
-  const goals = await prisma.goal.findMany({
-    where: { householdId },
-    orderBy: { deadline: "asc" },
-  });
+  const [goals, accounts] = await Promise.all([
+    prisma.goal.findMany({
+      where: { householdId },
+      orderBy: { deadline: "asc" },
+      include: {
+        entries: {
+          include: { account: true },
+        },
+      },
+    }),
+    prisma.account.findMany({
+      where: { householdId },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+  const today = toDateInputValue(new Date());
 
   return (
     <div className="flex flex-col gap-8">
@@ -89,7 +102,7 @@ export default async function MetasPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {goals.map((goal) => (
-            <GoalRow key={goal.id} goal={goal} />
+            <GoalRow key={goal.id} goal={goal} accounts={accounts} today={today} />
           ))}
         </div>
       )}

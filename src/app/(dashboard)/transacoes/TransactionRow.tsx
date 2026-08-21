@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import type { EntryType } from "@/generated/prisma/client";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { toDateInputValue } from "@/lib/dateInput";
 import { RecurrenceBadge } from "@/components/RecurrenceBadge";
-import { deleteTransaction, updateTransaction } from "./actions";
+import {
+  deleteTransaction,
+  updateTransaction,
+  type DeleteTransactionState,
+} from "./actions";
 import { TransactionFields } from "./TransactionFields";
+
+const initialDeleteState: DeleteTransactionState = { error: null };
 
 type AccountOption = { id: string; name: string };
 type CategoryOption = { id: string; name: string; type: EntryType };
-
-function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 export function TransactionRow({
   transaction,
@@ -42,6 +42,10 @@ export function TransactionRow({
   const [editing, setEditing] = useState(false);
   const updateTransactionWithId = updateTransaction.bind(null, transaction.id);
   const deleteTransactionWithId = deleteTransaction.bind(null, transaction.id);
+  const [deleteState, deleteAction, deletePending] = useActionState(
+    deleteTransactionWithId,
+    initialDeleteState,
+  );
 
   if (editing) {
     return (
@@ -82,55 +86,61 @@ export function TransactionRow({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div>
-        <div className="flex items-center gap-2">
-          <p className="font-medium text-zinc-900 dark:text-zinc-50">
-            {transaction.description || transaction.category.name}
+    <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+              {transaction.description || transaction.category.name}
+            </p>
+            <RecurrenceBadge
+              isFixed={transaction.isFixed}
+              installmentNumber={transaction.installmentNumber}
+              installmentTotal={transaction.installmentTotal}
+            />
+          </div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {transaction.category.name} · {transaction.account.name} ·{" "}
+            {transaction.date.toLocaleDateString("pt-BR")}
           </p>
-          <RecurrenceBadge
-            isFixed={transaction.isFixed}
-            installmentNumber={transaction.installmentNumber}
-            installmentTotal={transaction.installmentTotal}
-          />
         </div>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {transaction.category.name} · {transaction.account.name} ·{" "}
-          {transaction.date.toLocaleDateString("pt-BR")}
-        </p>
-      </div>
-      <div className="flex items-center gap-4">
-        <span
-          className={
-            transaction.type === "INCOME"
-              ? "font-medium text-emerald-600"
-              : "font-medium text-red-600"
-          }
-        >
-          {transaction.type === "INCOME" ? "+" : "-"}
-          {formatCurrency(transaction.amount)}
-        </span>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-        >
-          Editar
-        </button>
-        <form action={deleteTransactionWithId}>
-          <button
-            type="submit"
-            onClick={(e) => {
-              if (!confirm("Excluir esta transação?")) {
-                e.preventDefault();
-              }
-            }}
-            className="text-sm font-medium text-red-600 hover:text-red-500"
+        <div className="flex items-center gap-4">
+          <span
+            className={
+              transaction.type === "INCOME"
+                ? "font-medium text-emerald-600"
+                : "font-medium text-red-600"
+            }
           >
-            Excluir
+            {transaction.type === "INCOME" ? "+" : "-"}
+            {formatCurrency(transaction.amount)}
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Editar
           </button>
-        </form>
+          <form action={deleteAction}>
+            <button
+              type="submit"
+              disabled={deletePending}
+              onClick={(e) => {
+                if (!confirm("Excluir esta transação?")) {
+                  e.preventDefault();
+                }
+              }}
+              className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+            >
+              Excluir
+            </button>
+          </form>
+        </div>
       </div>
+      {deleteState.error && (
+        <p className="text-sm text-red-600">{deleteState.error}</p>
+      )}
     </div>
   );
 }

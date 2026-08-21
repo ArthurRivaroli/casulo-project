@@ -152,12 +152,29 @@ export async function updateTransaction(id: string, formData: FormData) {
   revalidatePath("/");
 }
 
-export async function deleteTransaction(id: string) {
+export type DeleteTransactionState = { error: string | null };
+
+export async function deleteTransaction(
+  id: string,
+  _prevState: DeleteTransactionState,
+  _formData: FormData,
+): Promise<DeleteTransactionState> {
   const user = await requireSession();
+
+  const linkedGoalEntry = await prisma.goalEntry.findFirst({
+    where: { transactionId: id, householdId: user.householdId },
+    include: { goal: true },
+  });
+  if (linkedGoalEntry) {
+    return {
+      error: `Esta transação está ligada à meta "${linkedGoalEntry.goal.name}". Exclua o lançamento por lá.`,
+    };
+  }
 
   await prisma.transaction.deleteMany({
     where: { id, householdId: user.householdId },
   });
   revalidatePath("/transacoes");
   revalidatePath("/");
+  return { error: null };
 }
