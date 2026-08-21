@@ -52,7 +52,9 @@ export function MobileNav({ userName }: { userName?: string | null }) {
           />
           <div className="absolute inset-y-0 left-0 flex w-64 flex-col bg-gradient-to-b from-indigo-950 via-violet-900 to-blue-950 p-4 shadow-xl">
             <div className="flex items-center justify-between">
-              <Logo className="h-8 w-auto" />
+              <Link href="/" onClick={() => setOpen(false)}>
+                <Logo className="h-8 w-auto" />
+              </Link>
               <button
                 type="button"
                 aria-label="Fechar menu"

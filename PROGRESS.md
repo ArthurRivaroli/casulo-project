@@ -219,5 +219,12 @@ Com isso, todas as entidades do schema (`Account`, `Category`, `Transaction`, `B
 - [src/components/RecurrenceBadge.tsx](src/components/RecurrenceBadge.tsx): badge "Fixa" ou "3/12" ao lado da descrição — usado em [TransactionRow.tsx](<src/app/(dashboard)/transacoes/TransactionRow.tsx>) e nas "Transações recentes" da dashboard
 - Validado com `tsc --noEmit`, `eslint` e `next build` — **não testado no navegador** (precisa da migração aplicada primeiro)
 
+### Simplificação do Resumo
+- Logo no header (desktop e gaveta mobile) agora é um `Link` pra `/` — antes não levava a lugar nenhum
+- Removida a data ("Agosto de 2026") do topo do Resumo
+- Removidos os 3 cards de resumo (Saldo total, Receitas do mês, Despesas do mês) — decisão do usuário depois de eu sugerir manter só o Saldo total como número único (a única info que não aparece em nenhum outro lugar do app); ele preferiu simplificar e deixar só os dois gráficos mesmo, então a página Resumo agora é: título, os dois gráficos, Contas, Transações recentes
+- [src/app/(dashboard)/page.tsx](<src/app/(dashboard)/page.tsx>): removido o componente `SummaryCard` e os cálculos de `income`/`expense`/`balance` que só alimentavam os cards (não tinham mais uso)
+- Validado com `tsc --noEmit`, `eslint` e `next build`
+
 ### Outros
 - [ ] Reativar o cadastro (`REGISTRATION_ENABLED`) se algum dia for preciso convidar mais alguém

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -21,7 +22,9 @@ export default async function DashboardLayout({
     <div className="flex min-h-full flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
       <header className="bg-gradient-to-r from-indigo-950 via-violet-900 to-blue-950">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Logo className="h-8 w-auto shrink-0" />
+          <Link href="/" className="shrink-0">
+            <Logo className="h-8 w-auto" />
+          </Link>
           <div className="sm:hidden">
             <MobileNav userName={session.user.name} />
           </div>
