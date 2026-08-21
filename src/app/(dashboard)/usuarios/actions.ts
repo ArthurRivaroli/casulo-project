@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const MIN_PASSWORD_LENGTH = 6;
+const MIN_PASSWORD_LENGTH = 8;
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -92,7 +92,9 @@ export async function deleteUser(
     return { error: "Não é possível excluir o único usuário da casa." };
   }
 
-  const transactionCount = await prisma.transaction.count({ where: { userId: id } });
+  const transactionCount = await prisma.transaction.count({
+    where: { userId: id, householdId: admin.householdId },
+  });
   if (transactionCount > 0) {
     const noun = transactionCount === 1 ? "transação" : "transações";
     return {

@@ -9,6 +9,7 @@ import type { EntryType } from "@/generated/prisma/client";
 const DEPOSIT_CATEGORY_NAME = "Poupança";
 const WITHDRAWAL_CATEGORY_NAME = "Resgate de poupança";
 const SYSTEM_CATEGORY_COLOR = "#6366f1";
+const MAX_AMOUNT = 1_000_000_000;
 
 async function requireSession() {
   const session = await getServerSession(authOptions);
@@ -18,7 +19,9 @@ async function requireSession() {
 
 function parseAmount(value: FormDataEntryValue | null): number {
   const amount = Number(value);
-  if (!Number.isFinite(amount) || amount <= 0) throw new Error("Valor inválido.");
+  if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) {
+    throw new Error("Valor inválido.");
+  }
   return amount;
 }
 

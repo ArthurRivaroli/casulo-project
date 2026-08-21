@@ -26,7 +26,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Email ou senha inválidos.");
+      setError(
+        result.error === "CredentialsSignin"
+          ? "Email ou senha inválidos."
+          : result.error,
+      );
       return;
     }
 
