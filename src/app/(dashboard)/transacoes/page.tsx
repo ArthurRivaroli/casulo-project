@@ -21,7 +21,7 @@ export default async function TransacoesPage() {
     }),
     prisma.transaction.findMany({
       where: { householdId },
-      orderBy: { date: "desc" },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       include: { account: true, category: true },
     }),
   ]);
@@ -45,6 +45,7 @@ export default async function TransacoesPage() {
           className="grid grid-cols-2 gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:flex sm:flex-wrap sm:items-end dark:border-zinc-800 dark:bg-zinc-900"
         >
           <TransactionFields
+            key={transactions.length}
             accounts={accounts}
             categories={categories}
             showRecurrenceOptions

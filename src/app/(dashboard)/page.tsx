@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     }),
     prisma.transaction.findMany({
       where: { householdId },
-      orderBy: { date: "desc" },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       include: { category: true, account: true },
     }),
   ]);
